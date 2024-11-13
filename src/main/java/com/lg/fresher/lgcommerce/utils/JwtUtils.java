@@ -47,10 +47,10 @@ public class JwtUtils {
     @Value("${lg-commerce.app.jwtSecret:LGCNSSECRETKEY}")
     private String jwtSecret;
 
-    @Value("${commerce.app.jwtExpirationMs:86400000}")
+    @Value("${lg-commerce.app.jwtExpirationMs:86400000}")
     private int jwtExpirationMs;
 
-    @Value("${commerce.app.refreshExpiration:86400000}")
+    @Value("${lg-commerce.app.refreshExpiration:86400000}")
     private int refreshExpiration;
 
     /**
@@ -113,7 +113,7 @@ public class JwtUtils {
         return Jwts.builder()
                 .claims(claims)
                 .issuedAt(new Date())
-                .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .expiration(new Date((new Date()).getTime() + jwtExpirationMs * 1000))
                 .signWith(secretKey)
                 .compact();
     }

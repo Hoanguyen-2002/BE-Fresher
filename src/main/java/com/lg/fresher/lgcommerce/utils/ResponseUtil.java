@@ -29,8 +29,8 @@ public class ResponseUtil {
         // Set HTTP status based on different result codes
         int status =
                 switch (resultCode) {
-                    case FAIL_INVALID_ACCOUNT, FAIL_INVALID_TOKEN -> HttpStatus.UNAUTHORIZED.value();
-                    case FAIL_TOKEN_ACCESS_FORBIDDEN -> HttpStatus.FORBIDDEN.value();
+                    case FAIL_INVALID_ACCOUNT -> HttpStatus.UNAUTHORIZED.value();
+                    case FAIL_TOKEN_ACCESS_FORBIDDEN, FAIL_INVALID_TOKEN -> HttpStatus.FORBIDDEN.value();
                     default -> HttpStatus.BAD_REQUEST.value();
                 };
 

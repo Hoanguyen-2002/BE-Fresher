@@ -3,6 +3,7 @@ package com.lg.fresher.lgcommerce.aop;
 import com.lg.fresher.lgcommerce.constant.Status;
 import com.lg.fresher.lgcommerce.exception.BusinessException;
 import com.lg.fresher.lgcommerce.exception.DuplicateDataException;
+import com.lg.fresher.lgcommerce.exception.auth.RefreshTokenException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
 import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
@@ -179,6 +180,20 @@ public class DefaultExceptionHandler {
         map.put("msg", Status.FAIL_SEARCH_INVALID_PARAM.label());
         map.put("code", Status.FAIL_SEARCH_INVALID_PARAM.code());
         return new ResponseEntity<>(map, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(RefreshTokenException.class)
+    public Object handleRefreshTokenException(HttpServletRequest request, Exception e) {
+        HttpStatus status = getStatus(request);
+        Map<String, Object> map;
+        if (e instanceof RefreshTokenException) {
+            map = ((RefreshTokenException) e).toMap();
+        } else if (e.getCause() instanceof RefreshTokenException) {
+            map = ((RefreshTokenException) e.getCause()).toMap();
+        } else {
+            map = buildGeneralErrorResponse(e, status);
+        }
+        return new ResponseEntity<>(map, HttpStatus.UNAUTHORIZED);
     }
 
     private Map<String, Object> buildGeneralErrorResponse(Exception e, HttpStatus status) {

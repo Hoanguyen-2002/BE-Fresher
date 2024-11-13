@@ -83,7 +83,7 @@ class RegisterServiceImplTest {
 
         CommonResponse<StringResponse> response = registerService.executeWithJsonResult(signupRequest);
 
-        Assertions.assertEquals("Registered successfully!", response.getMsg());
+        Assertions.assertEquals("Đăng ký thành công", response.getMsg());
     }
 
     // Throws an exception if the username is already taken
@@ -115,7 +115,7 @@ class RegisterServiceImplTest {
         Mockito.when(redisService.getValue(account.getEmail())).thenReturn("123456");
 
         CommonResponse<StringResponse> response = registerService.verifyUser(verifyUserRequest);
-        Assertions.assertEquals("Verify successfully", response.getMsg());
+        Assertions.assertEquals("Xác thực thành công", response.getMsg());
     }
 
     @Test
@@ -146,7 +146,7 @@ class RegisterServiceImplTest {
         Mockito.when(accountRepository.findAccountByEmail(email)).thenReturn(Optional.of(account));
 
         CommonResponse<StringResponse> response = registerService.resendVerifyCode(email);
-        Assertions.assertEquals("Verify code has sent to your mail!", response.getMsg());
+        Assertions.assertEquals("Gửi lại mã xác thực thành công", response.getMsg());
     }
 
     @Test

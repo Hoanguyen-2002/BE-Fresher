@@ -6,7 +6,7 @@ import com.lg.fresher.lgcommerce.constant.AccountStatus;
 import com.lg.fresher.lgcommerce.constant.Status;
 import com.lg.fresher.lgcommerce.entity.account.Account;
 import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
-import com.lg.fresher.lgcommerce.filter.AuthTokenFilter;
+import com.lg.fresher.lgcommerce.exception.auth.RefreshTokenException;
 import com.lg.fresher.lgcommerce.model.request.auth.*;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.JwtResponse;
@@ -56,7 +56,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticateServiceImpl implements AuthenService {
-    private static final Logger authLogger = LoggerFactory.getLogger(AuthTokenFilter.class);
+    private static final Logger authLogger = LoggerFactory.getLogger(AuthenticateServiceImpl.class);
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final AccountRepository accountRepository;
@@ -112,9 +112,10 @@ public class AuthenticateServiceImpl implements AuthenService {
         String refreshToken = refreshTokenRequest.getRefreshToken();
         String userId = refreshTokenRequest.getUserId();
         if (!jwtUtils.validateRefreshToken(refreshToken, userId)) {
-            throw new InvalidRequestException(Status.FAIL_REFRESH_TOKEN_INVALID);
+            throw new RefreshTokenException();
         }
-        Account account = accountRepository.findUserByAccountId(userId).orElseThrow(() -> new InvalidRequestException(Status.FAIL_USER_NOT_FOUND));
+        Account account = accountRepository.findUserByAccountId(userId).orElseThrow(
+                () -> new InvalidRequestException(Status.FAIL_USER_NOT_FOUND));
         if (account.getStatus() == AccountStatus.BANNED) {
             throw new InvalidRequestException(Status.FAIL_USER_IS_BANNED);
         }
@@ -124,13 +125,16 @@ public class AuthenticateServiceImpl implements AuthenService {
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-        String accessToken = jwtUtils.generateJwtToken(authentication);
+        String newAccessToken = jwtUtils.generateJwtToken(authentication);
         String newRefreshToken = jwtUtils.generateRefreshToken();
+
         jwtUtils.revokeRefreshToken(refreshToken, userId);
+        jwtUtils.saveToken(userDetails.getUserId(),
+                newRefreshToken, newAccessToken);
 
         JwtResponse response = new JwtResponse(
-                accessToken,
-                refreshToken,
+                newAccessToken,
+                newRefreshToken,
                 userDetails.getUserId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
@@ -149,7 +153,10 @@ public class AuthenticateServiceImpl implements AuthenService {
 
     @Override
     public CommonResponse<StringResponse> signOut(LogoutRequest logoutRequest) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
         String token = logoutRequest.getRefreshToken();
         if (token != null && jwtUtils.validateRefreshToken(token, userDetails.getUserId())) {
             jwtUtils.revokeRefreshToken(token, userDetails.getUserId());
@@ -181,7 +188,10 @@ public class AuthenticateServiceImpl implements AuthenService {
 
     @Override
     public CommonResponse<Map<String, Object>> changePassword(ChangePasswordRequest changePasswordRequest) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
         Account account = accountRepository.findUserByAccountId(userDetails.getUserId()).orElseThrow(
                 () -> new InvalidRequestException(Status.FAIL_USER_NOT_FOUND)
         );

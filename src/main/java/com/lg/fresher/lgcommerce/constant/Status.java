@@ -44,7 +44,7 @@ public enum Status {
     FAIL_USER_IS_BANNED(6003, "Tài khoản đã bị khóa"),
     DATA_IS_DEACTIVE(6005, "Dữ liệu hiện không khả dụng"),
 
-    FAIL_REFRESH_TOKEN_INVALID(7001, "Token hết hạn"),
+    FAIL_REFRESH_TOKEN_INVALID(7001, "Refresh token không hợp lệ"),
     FAIL_SEARCH_INVALID_PARAM(9001, "Tham số tìm kiếm không hợp lệ"),
 
     REGISTER_SUCCESS(10000, "Đăng ký thành công"),

@@ -111,7 +111,7 @@ class AuthenticateServiceImplTest {
         Mockito.when(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).thenReturn(userDetails);
 
         CommonResponse<StringResponse> response = authenticateService.signOut(logoutRequest);
-        Assertions.assertEquals("Logout successfull", response.getMsg());
+        Assertions.assertEquals("Đăng xuất thành công", response.getMsg());
     }
 
     @Test
