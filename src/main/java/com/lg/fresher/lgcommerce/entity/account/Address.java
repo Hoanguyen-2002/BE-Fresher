@@ -1,0 +1,45 @@
+package com.lg.fresher.lgcommerce.entity.account;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.lg.fresher.lgcommerce.entity.core.BaseEntity;
+import jakarta.persistence.*;
+import lombok.*;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "address", schema = "lgecommerce", indexes = {
+        @Index(name = "account_id", columnList = "account_id")
+})
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class Address extends BaseEntity {
+    @Id
+    @Column(name = "address_id", nullable = false, length = 50)
+    private String addressId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
+    @JoinColumn(name = "account_id")
+    private Account account;
+
+    @Column(name = "province")
+    private String province;
+
+    @Column(name = "city")
+    private String city;
+
+    @Column(name = "district")
+    private String district;
+
+    @Override
+    public String toString() {
+        return "Address{" +
+                "addressId='" + addressId + '\'' +
+                ", province='" + province + '\'' +
+                ", city='" + city + '\'' +
+                ", district='" + district + '\'' +
+                '}';
+    }
+}
