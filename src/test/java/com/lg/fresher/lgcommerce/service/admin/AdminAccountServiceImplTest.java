@@ -66,7 +66,7 @@ public class AdminAccountServiceImplTest {
 
         MetaData metaData = (MetaData) content.get("metaData");
         assertEquals(pageNo, metaData.getOffSet());
-        assertEquals(accountPage.getTotalPages(), metaData.getTotalElement());
+        assertEquals(accountPage.getTotalPages(), metaData.getTotalElements());
         assertEquals(pageSize, metaData.getLimit());
     }
 

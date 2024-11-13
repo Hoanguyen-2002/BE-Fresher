@@ -20,7 +20,7 @@ import com.lg.fresher.lgcommerce.model.response.author.AuthorResponse;
 import com.lg.fresher.lgcommerce.model.response.book.BookCardResponse;
 import com.lg.fresher.lgcommerce.model.response.book.BookResponse;
 import com.lg.fresher.lgcommerce.model.response.book_image.BookImageResponse;
-import com.lg.fresher.lgcommerce.model.response.category.CategoryDTO;
+import com.lg.fresher.lgcommerce.model.response.admin.category.CategoryDTO;
 import com.lg.fresher.lgcommerce.model.response.property.PropertyResponse;
 import com.lg.fresher.lgcommerce.repository.author.AuthorRepository;
 import com.lg.fresher.lgcommerce.repository.book.*;
