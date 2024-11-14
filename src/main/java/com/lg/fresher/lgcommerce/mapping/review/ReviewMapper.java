@@ -14,5 +14,6 @@ public interface ReviewMapper {
     @Mapping(source = "review.account.accountId", target = "accountId")
     @Mapping(source = "review.account.username", target = "username")
     @Mapping(source = "review.reviewImages", target = "images")
+    @Mapping(source = "review.createdAt", target = "createdAt")
     ReviewResponse toReviewResponse(Review review);
 }

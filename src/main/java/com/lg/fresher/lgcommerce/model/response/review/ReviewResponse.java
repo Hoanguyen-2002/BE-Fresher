@@ -7,7 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -30,7 +32,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ReviewResponse extends BaseResponse {
+public class ReviewResponse {
 
     //@JsonProperty("review_id")
     private String reviewId;
@@ -40,6 +42,9 @@ public class ReviewResponse extends BaseResponse {
     private List<ReviewImageResponse> images;
     private Integer rating;
     private String comment;
+
+//    @JsonProperty("created_at")
+    private LocalDateTime createdAt;
 
 
 }
