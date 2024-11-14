@@ -34,10 +34,12 @@ public class ReviewResponse extends BaseResponse {
 
     @JsonProperty("review_id")
     private String reviewId;
-
+    private String bookId;
+    private String accountId;
+    private String username;
     private List<ReviewImageResponse> images;
-
     private Integer rating;
-
     private String comment;
+
+
 }

@@ -47,6 +47,9 @@ public class Review extends BaseEntity {
     @Column(name = "comment")
     private String comment;
 
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
     @Override
     public String toString() {
         return "Review{" +
