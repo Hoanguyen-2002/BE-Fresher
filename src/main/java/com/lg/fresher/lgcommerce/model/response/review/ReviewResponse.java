@@ -19,14 +19,14 @@ import java.util.List;
  *------------------------------------------------------------------------
  * @ Class Name : ReviewResponse
  * @ Description : lg_ecommerce_be ReviewResponse
- * @ author lg_ecommerce_be Dev Team 63200485
- * @ since 11/15/2024
+ * @ author lg_ecommerce_be Dev Team 63200504
+ * @ since 11/6/2024
  *------------------------------------------------------------------------
  * Modification Information
  *------------------------------------------------------------------------
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
- * 11/15/2024       63200485      first creation */
+ * 11/6/2024       63200504      first creation */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -43,7 +43,7 @@ public class ReviewResponse {
     private Integer rating;
     private String comment;
 
-    //    @JsonProperty("created_at")
+//    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
 
