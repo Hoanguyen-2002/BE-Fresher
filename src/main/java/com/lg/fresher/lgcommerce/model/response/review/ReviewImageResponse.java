@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 /**
  *
@@ -24,7 +23,6 @@ import lombok.experimental.SuperBuilder;
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
  * 11/6/2024       63200504      first creation */
-@SuperBuilder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

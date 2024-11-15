@@ -100,7 +100,7 @@ public class CategoryController {
      * ---------------  ---------   -----------------------------------------------
      * 11/6/2024           63200485    first creation
      *<pre>
-     * @param categoryRequestDTO
+     * @param categoryRequest
      * @return  ResponseEntity<CommonResponse<CategoryModel>>
      */
     @PostMapping("")

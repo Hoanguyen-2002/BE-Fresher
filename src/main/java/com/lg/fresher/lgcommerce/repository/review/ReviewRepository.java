@@ -19,4 +19,3 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
     @Query(value = "SELECT COUNT(r.review_id) FROM review r WHERE r.book_id = :bookId", nativeQuery = true)
     long countReviewsByBookId(@Param("bookId") String bookId);
 }
-
