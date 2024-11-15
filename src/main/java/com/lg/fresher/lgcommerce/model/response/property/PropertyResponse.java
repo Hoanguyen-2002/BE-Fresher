@@ -30,8 +30,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PropertyResponse extends BaseResponse {
 
-    @JsonProperty("property_id")
-    private String propertyId;
+    private String booKPropertyId;
 
     private String name;
 

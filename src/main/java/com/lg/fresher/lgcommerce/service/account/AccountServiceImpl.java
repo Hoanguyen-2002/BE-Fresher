@@ -101,15 +101,17 @@ public class AccountServiceImpl implements AccountService {
                             .filter(address -> address.getAddressId().equals(updateRequest.getAddresId()))
                             .findFirst()
                             .orElseThrow(() -> new InvalidRequestException(Status.UPDATE_ACCOUNT_FAIL_ADDRESS_NOT_FOUND));
-                    existingAddress.setCity(existingAddress.getCity());
-                    existingAddress.setDistrict(existingAddress.getDistrict());
-                    existingAddress.setProvince(existingAddress.getProvince());
+                    existingAddress.setCity(updateRequest.getCity());
+                    existingAddress.setDistrict(updateRequest.getDistrict());
+                    existingAddress.setProvince(updateRequest.getProvince());
+                    existingAddress.setDetailAddress(updateRequest.getDetailAddress());
                 } else if (existingAddresses.size() < MAX_ADDRESS) {
                     Address newAddress = new Address();
                     newAddress.setAddressId(UUIDUtil.generateId());
                     newAddress.setCity(updateRequest.getCity());
                     newAddress.setDistrict(updateRequest.getDistrict());
                     newAddress.setProvince(updateRequest.getProvince());
+                    newAddress.setDetailAddress(updateRequest.getDetailAddress());
                     newAddress.setAccount(account);
                     existingAddresses.add(newAddress);
                 }

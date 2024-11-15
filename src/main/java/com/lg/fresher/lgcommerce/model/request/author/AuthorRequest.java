@@ -28,9 +28,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AuthorRequest {
 
-    private String authorId;
+    private String bookAuthorId;
 
-    @NotBlank
+    @NotBlank(message = "Không được để trống tên tác giả")
     @Size(max = 255, message = "Độ dài của tên tác giả không được vượt quá 255 ký tự")
     private String name;
 }

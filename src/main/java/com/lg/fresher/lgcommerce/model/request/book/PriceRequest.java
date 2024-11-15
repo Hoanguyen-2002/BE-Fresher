@@ -32,11 +32,11 @@ public class PriceRequest {
 
     private String priceId;
 
-    @NotNull
+    @NotNull(message = "Không được để trống giá gốc")
     @Min(value = 0, message = "Giá bán cơ sở không được là số âm")
     private Double basePrice;
 
-    @NotNull
+    @NotNull(message = "Không được để trống giá giảm")
     @Min(value = 0, message = "Giá giảm không được là số âm")
     private Double discountPrice;
 }

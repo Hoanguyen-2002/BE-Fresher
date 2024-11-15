@@ -30,13 +30,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PriceResponse extends BaseResponse {
-    @JsonProperty("price_id")
     private String priceId;
 
-    @JsonProperty("base_price")
     private Double basePrice;
 
-    @JsonProperty("discount_price")
     private Double discountPrice;
 
     private BookResponse book;

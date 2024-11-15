@@ -33,13 +33,18 @@ public class Address extends BaseEntity {
     @Column(name = "district")
     private String district;
 
+    @Column(name = "detail_address")
+    private String detailAddress;
+
     @Override
     public String toString() {
         return "Address{" +
                 "addressId='" + addressId + '\'' +
+                ", account=" + account +
                 ", province='" + province + '\'' +
                 ", city='" + city + '\'' +
                 ", district='" + district + '\'' +
+                ", detailAddress='" + detailAddress + '\'' +
                 '}';
     }
 }

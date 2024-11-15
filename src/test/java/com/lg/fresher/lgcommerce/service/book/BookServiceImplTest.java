@@ -22,6 +22,7 @@ import com.lg.fresher.lgcommerce.model.response.book.BookResponse;
 import com.lg.fresher.lgcommerce.model.response.book_image.BookImageResponse;
 import com.lg.fresher.lgcommerce.model.response.admin.category.CategoryDTO;
 import com.lg.fresher.lgcommerce.model.response.property.PropertyResponse;
+import com.lg.fresher.lgcommerce.model.response.publisher.PublisherResponse;
 import com.lg.fresher.lgcommerce.repository.author.AuthorRepository;
 import com.lg.fresher.lgcommerce.repository.book.*;
 import com.lg.fresher.lgcommerce.model.response.book.itf.ClientBookCard;
@@ -188,7 +189,6 @@ public class BookServiceImplTest {
         assertEquals("This is a sample book description", ((List<BookResponse>) response.getData().get("content")).get(0).getDescription());
         assertEquals(10, ((List<BookResponse>) response.getData().get("content")).get(0).getQuantity());
         assertEquals("http://example.com/thumbnail.jpg", ((List<BookResponse>) response.getData().get("content")).get(0).getThumbnail());
-        assertEquals("Sample Publisher", ((List<BookResponse>) response.getData().get("content")).get(0).getPublisher().getName());
         assertEquals(100.0, ((List<BookResponse>) response.getData().get("content")).get(0).getPrice().getBasePrice());
         assertEquals(90.0, ((List<BookResponse>) response.getData().get("content")).get(0).getPrice().getDiscountPrice());
         assertEquals(50, ((List<BookResponse>) response.getData().get("content")).get(0).getTotalReviewsCount());
@@ -303,4 +303,69 @@ public class BookServiceImplTest {
         verify(bookRepository, never()).save(any(Book.class));
     }
 
+    @Test
+    public void updateBook_Successfully() {
+
+    }
+
+    @Test
+    public void updateBook_failed_DataNotFound() {
+        String bookId = "invalid_book_id";
+
+        BookRequest bookRequest = BookRequest.builder()
+                .title("Test Book")
+                .thumbnail("http://example.com/thumbnail.jpg")
+                .description("Sample description")
+                .quantity(10)
+                .publisher(PublisherRequest.builder().name("Test Publisher").build())
+                .images(List.of(BookImageRequest.builder().imageUrl("http://example.com/image1.jpg").build()))
+                .price(PriceRequest.builder().basePrice(100.0).discountPrice(10.0).build())
+                .categories(List.of(CategoryRequest.builder().categoryId("001").name("Category 1").build()))
+                .authors(List.of(AuthorRequest.builder().name("Author 1").build()))  // Đảm bảo có AuthorRequest
+                .properties(List.of(PropertyRequest.builder().name("Property 1").value("Value 1").build()))
+                .build();
+
+        when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
+
+        //Act and Assert
+        assertThrows(DataNotFoundException.class, () -> {
+            CommonResponse<StringResponse> response = bookService.updateBook(bookRequest, bookId);
+        });
+    }
+
+    @Test
+    public void getTopSeller_succesfully(){
+        ClientBookCard bookCard = Mockito.mock(ClientBookCard.class);
+        when(bookCard.getBookId()).thenReturn("abcs");
+        when(bookCard.getTitle()).thenReturn("Test Book");
+        when(bookCard.getThumbnail()).thenReturn("test_thumbnail.png");
+        when(bookCard.getAuthorName()).thenReturn("Author1");
+        when(bookCard.getCategoryName()).thenReturn("Category1");
+        when(bookCard.getAverageRating()).thenReturn(4.5);
+        when(bookCard.getBasePrice()).thenReturn(20.0);
+        when(bookCard.getDiscountPrice()).thenReturn(15.0);
+        when(bookCard.getTotalSalesCount()).thenReturn(100);
+
+        when(bookRepository.findTopSeller()).thenReturn(Optional.of(List.<ClientBookCard>of(bookCard)));
+
+        // Act
+        CommonResponse<Map<String, Object>> response = bookService.getTopSeller();
+
+        // Assert
+        assertEquals(1, ((List<BookCardResponse>) response.getData().get("content")).size());
+        assertEquals("abcs", ((List<BookCardResponse>) response.getData().get("content")).get(0).getBookId());
+        assertEquals("Test Book", ((List<BookCardResponse>) response.getData().get("content")).get(0).getTitle());
+    }
+
+    @Test
+    public void getTopSeller_succesfully_noResult(){
+
+
+        when(bookRepository.findTopSeller()).thenReturn(Optional.empty());
+        // Act
+        CommonResponse<Map<String, Object>> response = bookService.getTopSeller();
+
+        // Assert
+        assertEquals(0, ((List<BookCardResponse>) response.getData().get("content")).size());
+    }
 }

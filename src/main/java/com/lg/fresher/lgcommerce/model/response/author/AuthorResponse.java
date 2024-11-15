@@ -33,8 +33,7 @@ import java.util.List;
 @SuperBuilder
 public class AuthorResponse extends BaseResponse {
 
-    @JsonProperty("author_id")
-    private String authorId;
+    private String bookAuthorId;
 
     private String name;
 

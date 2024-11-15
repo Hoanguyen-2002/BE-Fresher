@@ -50,6 +50,7 @@ public interface AccountMapper {
      * ---------------  ---------   -----------------------------------------------
      * 11/8/2024           63200502    first creation
      * 11/11/2024          63200502    add mapper for search account response
+     * 11/13/2024          63200502    add more attriubte: updateAt, status
      *<pre>
      * @param account
      * @return  AccountInfoResponse
@@ -58,10 +59,15 @@ public interface AccountMapper {
     @Mapping(target = "phone", source = "profile.phone")
     @Mapping(target = "avatar", source = "profile.avatar")
     @Mapping(target = "listAddress", source = "address")
+    @Mapping(target = "jointDate", source = "createdAt")
+    @Mapping(target = "updatedDate", source = "updatedAt")
+    @Mapping(target = "status", source = "status")
     AccountInfoResponse toAccountInfoResponse(Account account);
     @Mapping(target = "fullname", source = "profile.fullname")
     @Mapping(target = "avatar", source = "profile.avatar")
     @Mapping(target = "jointDate", source = "createdAt")
+    @Mapping(target = "updatedDate", source = "updatedAt")
+    @Mapping(target = "status", source = "status")
     SearchAccountResponse toSearchAccountResponse(Account account);
 
     /**

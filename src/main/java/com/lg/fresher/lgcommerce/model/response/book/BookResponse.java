@@ -37,7 +37,6 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @SuperBuilder
 public class BookResponse extends BaseResponse {
-    @JsonProperty("book_id")
     private String bookId;
     private String title;
     private String description;

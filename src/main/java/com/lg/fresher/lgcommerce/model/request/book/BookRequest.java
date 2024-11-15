@@ -42,32 +42,34 @@ import java.util.List;
 public class BookRequest {
     private String bookId;
 
-    @NotBlank
+    @NotBlank(message = "Không được để trống tiêu đề")
     @Length(max = 255, message = "Độ dài tiêu dề quyền sách không được vượt quá 255 ký tự")
     private String title;
 
-    @Length(max = 255, message = "Độ dài cuar link ảnh không được vượt quá 255 ký tự")
+    @Length(max = 255, message = "Độ dài của link ảnh không được vượt quá 255 ký tự")
     private String thumbnail;
+
+    private Boolean status;
 
     private String description;
 
-    @NotNull
+    @NotNull(message = "Không được để trống số lượng")
     @Min(value = 0, message = "Số lượng phải là một số dương")
     private Integer quantity;
 
-    @NotNull
+    @NotNull(message = "Không được để trống nhà xuất bản")
     private @Valid PublisherRequest publisher;
 
-    @NotNull
+    @NotNull(message = "Không được để trống tác giả")
     private List<@Valid AuthorRequest> authors;
 
     private List<@Valid BookImageRequest> images;
 
-    @NotNull
+    @NotNull(message = "Không được để trống danh mục sách")
     private List<@Valid CategoryRequest> categories;
 
     private List<@Valid PropertyRequest> properties;
 
-    @NotNull
+    @NotNull(message = "Không được để trống giá sách")
     private @Valid PriceRequest price;
 }

@@ -8,8 +8,8 @@ import jakarta.validation.ConstraintValidatorContext;
  -------------------------------------------------------------------------
  * LG CNS Ecommerce
  *------------------------------------------------------------------------
- * @ Class Name : PasswordValidator
- * @ Description : lg_ecommerce_be PasswordValidator
+ * @ Class Name : UsernameValidator
+ * @ Description : lg_ecommerce_be UsernameValidator
  * @ author lg_ecommerce_be Dev Team 63200502
  * @ since 11/14/2024
  *------------------------------------------------------------------------
@@ -18,38 +18,38 @@ import jakarta.validation.ConstraintValidatorContext;
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
  * 11/14/2024       63200502      first creation */
-public class PasswordValidator implements ConstraintValidator<ValidPassword, String> {
-    private int min;
+public class UsernameValidator implements ConstraintValidator<ValidUsername, String> {
     private String message;
-    private static final String PASSWORD_PATTERN = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&]).*$";
+    private int min;
+    private static final String USERNAME_PATTERN = "^[A-Za-z]\\w{5,19}$";
 
     /**
      *
      * @param constraintAnnotation
      */
     @Override
-    public void initialize(ValidPassword constraintAnnotation) {
+    public void initialize(ValidUsername constraintAnnotation) {
         this.min = constraintAnnotation.min();
         this.message = constraintAnnotation.message();
     }
 
     /**
      *
-     * @param password
+     * @param username
      * @param constraintValidatorContext
      * @return
      */
     @Override
-    public boolean isValid(String password, ConstraintValidatorContext constraintValidatorContext) {
-        if (password == null || password.length() < min) {
+    public boolean isValid(String username, ConstraintValidatorContext constraintValidatorContext) {
+        if (username == null || username.length() < min) {
             constraintValidatorContext.disableDefaultConstraintViolation();
             constraintValidatorContext.buildConstraintViolationWithTemplate(
-                    "Mật khẩu phải từ " + min + " ký tự và phải có ít nhất 1 chữ số và ký tự đặc biệt"
+                    "Tên tài khoản phải từ " + min + " ký tự"
             ).addConstraintViolation();
             return false;
         }
 
-        boolean matches = password.matches(PASSWORD_PATTERN);
+        boolean matches = username.matches(USERNAME_PATTERN);
         if (!matches) {
             constraintValidatorContext.disableDefaultConstraintViolation();
             constraintValidatorContext.buildConstraintViolationWithTemplate(message).addConstraintViolation();

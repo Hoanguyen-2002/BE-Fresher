@@ -31,7 +31,6 @@ import java.util.List;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PublisherResponse {
-    @JsonProperty("publisher_id")
     private String publisherId;
 
     private String name;

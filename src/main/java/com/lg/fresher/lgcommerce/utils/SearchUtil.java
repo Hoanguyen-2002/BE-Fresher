@@ -4,37 +4,37 @@ import com.lg.fresher.lgcommerce.model.request.common.SortRequest;
 import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.Sort;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- -------------------------------------------------------------------------
+ * -------------------------------------------------------------------------
  * LG CNS Ecommerce
- *------------------------------------------------------------------------
+ * ------------------------------------------------------------------------
+ *
  * @ Class Name : SearchUtil
  * @ Description : lg_ecommerce_be SearchUtil
  * @ author lg_ecommerce_be Dev Team 63200502
  * @ since 11/12/2024
- *------------------------------------------------------------------------
+ * ------------------------------------------------------------------------
  * Modification Information
- *------------------------------------------------------------------------
+ * ------------------------------------------------------------------------
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
- * 11/12/2024       63200502      first creation */
+ * 11/12/2024       63200502      first creation
+ */
 @UtilityClass
 public class SearchUtil {
     /**
-     *
      * @ Description : lg_ecommerce_be SearchUtil Member Field parseSortRequest
-     *<pre>
+     * <pre>
      * Date of Revision Modifier Revision
      * ---------------  ---------   -----------------------------------------------
      * 11/12/2024           63200502    first creation
-     *<pre>
+     * 11/13/2024           63200502    fix default value
+     * <pre>
      * @param sortString
-     * @return  List<SortRequest>
+     * @return List<SortRequest>
      */
     public List<SortRequest> parseSortRequest(String sortString) {
         List<SortRequest> sortRequestList = new ArrayList<>();
@@ -50,7 +50,7 @@ public class SearchUtil {
                 sortRequest.setSortDirection(Sort.Direction.DESC);
             } else {
                 sortRequest.setSortField(field);
-                sortRequest.setSortDirection(Sort.Direction.ASC); // default
+                sortRequest.setSortDirection(Sort.Direction.DESC); // default
             }
             sortRequestList.add(sortRequest);
         }

@@ -28,11 +28,11 @@ import org.hibernate.validator.constraints.Length;
 @NoArgsConstructor
 @Builder
 public class CategoryRequest {
-    @NotBlank
+    @NotBlank(message = "Không được để trống mã của danh mục")
     @Length(max = 50, message = "Độ dài của tên mã dạnh mục không được vượt quá 50 ký tự")
     private String categoryId;
 
-    @NotBlank
+    @NotBlank(message = "Không được để trống tên danh mục")
     @Size(max = 255, message = "Độ dài của tên danh mục không được vượt quá 255 ký tự")
     private String name;
 }

@@ -51,6 +51,7 @@ import java.util.UUID;
  * 11/5/2024       63200502      first creation
  * 11/6/2024       63200502      add reset password function
  * 11/7/2024       63200502      add userId for revoke refresh token
+ * 11/14/2024      63200502      change logic refresh token
  */
 @Service
 @RequiredArgsConstructor
@@ -126,15 +127,12 @@ public class AuthenticateServiceImpl implements AuthenService {
                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
         String newAccessToken = jwtUtils.generateJwtToken(authentication);
-        String newRefreshToken = jwtUtils.generateRefreshToken();
 
-        jwtUtils.revokeRefreshToken(refreshToken, userId);
-        jwtUtils.saveToken(userDetails.getUserId(),
-                newRefreshToken, newAccessToken);
+        jwtUtils.saveAccessToken(userDetails.getUserId(), newAccessToken);
 
         JwtResponse response = new JwtResponse(
                 newAccessToken,
-                newRefreshToken,
+                refreshToken,
                 userDetails.getUserId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),

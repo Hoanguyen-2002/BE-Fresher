@@ -217,6 +217,26 @@ public class JwtUtils {
     }
 
     /**
+     *
+     * @ Description : lg_ecommerce_be JwtUtils Member Field saveAccessToken
+     *<pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/14/2024           63200502    first creation
+     *<pre>
+     * @param userId
+     * @param accessToken
+     */
+    public void saveAccessToken(String userId, String accessToken){
+        try {
+            String accessKey = generateRedisKey(TokenConstant.ACCESS_TOKEN, userId, accessToken);
+            redisService.setValue(accessKey, userId, jwtExpirationMs);
+        } catch (Exception e) {
+            log.error("Error: Can't save refreshToken");
+        }
+    }
+
+    /**
      * @ Description : lg_ecommerce_be JwtUtils Member Field getUsernameFromRefreshToken
      * <pre>
      * Date of Revision Modifier Revision

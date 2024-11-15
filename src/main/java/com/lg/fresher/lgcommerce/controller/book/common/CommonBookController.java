@@ -50,4 +50,9 @@ public class CommonBookController {
         return bookService.getBookDetailByClient(id);
     }
 
+    @GetMapping("/top-sellers")
+    public CommonResponse<?> getTopSellers() {
+        return bookService.getTopSeller();
+    }
+
 }

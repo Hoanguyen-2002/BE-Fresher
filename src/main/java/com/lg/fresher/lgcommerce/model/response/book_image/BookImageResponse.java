@@ -28,9 +28,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookImageResponse extends BaseResponse {
-    @JsonProperty("book_image_id")
+
     private String bookImageId;
 
-    @JsonProperty("image_url")
+
     private String imageUrl;
 }

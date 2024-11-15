@@ -33,4 +33,6 @@ public interface BookService {
 
     CommonResponse<StringResponse> updateBook(BookRequest bookRequest, String id);
 
+    CommonResponse<Map<String, Object>> getTopSeller();
+
 }

@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -120,7 +121,9 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public CommonResponse<Map<String, Object>> getBookDetailByClient(String bookId) {
-        Map<String, Object> res = bookRepository.findBookDetailById(bookId).orElseThrow(() -> new DataNotFoundException("Book not found"));
+        Map<String, Object> res = bookRepository.findBookDetailById(bookId).orElse(new HashMap<>());
+
+        if (res.isEmpty()) throw new DataNotFoundException("Không tìm thấy sách hợp lệ!");
 
         Double basePrice = res.get("base_price") == null ? null : Double.parseDouble(res.get("base_price").toString());
         Double discountPrice = res.get("discount_price") == null ? null : Double.parseDouble(res.get("discount_price").toString());
@@ -132,9 +135,7 @@ public class BookServiceImpl implements BookService {
                 .description(res.get("description").toString())
                 .quantity(Integer.parseInt(res.get("quantity").toString()))
                 .thumbnail(res.get("thumbnail").toString())
-                .publisher(res.get("publisherName") == null ? null : PublisherResponse.builder()
-                        .name(res.get("publisherName").toString())
-                        .build())
+                .publisher(res.get("publisher") == null ? null : jsonUtils.fromJson(res.get("publisher").toString(), PublisherResponse.class))
                 .images(res.get("book_image_json") == null ? null :
                         Arrays.stream((jsonUtils.fromJson(res.get("book_image_json").toString(), BookImageResponse[].class))).toList())
                 .authors(res.get("book_author_json") == null ? null :
@@ -151,7 +152,7 @@ public class BookServiceImpl implements BookService {
                 .averageRating(Double.valueOf(res.get("averageRating").toString()))
                 .totalSalesCount(Integer.valueOf(res.get("totalSalesCount").toString()))
                 .build();
-        return CommonResponse.success(Map.of("content", List.of(bookRes)));
+        return CommonResponse.success(Map.of("content", bookRes));
     }
 
     /**
@@ -210,31 +211,244 @@ public class BookServiceImpl implements BookService {
                 .orElseThrow(() -> new DataNotFoundException("Không tìm thấy book có id: "+ id));
 
         if (bookRepository.existsByTitle(bookRequest.getTitle()) && !refBook.getTitle().equals(bookRequest.getTitle())) {
-            throw new DuplicateDataException("Title already exists");
+            throw new DuplicateDataException("Title đã tồn tại!");
         }
 
-        //handle update categories
+        //update publisher
+        Optional<Publisher> optionalPublisher = publisherRepository.findByName(bookRequest.getPublisher().getName().toLowerCase());
+        Publisher publisher = optionalPublisher.orElseGet(() -> publisherRepository.save(Publisher.builder()
+                .publisherId(UUID.randomUUID().toString()).name(bookRequest.getPublisher().getName()).build()));
+
+        // update common information
+        refBook.setTitle(bookRequest.getTitle());
+        refBook.setThumbnail(bookRequest.getThumbnail());
+        refBook.setStatus(bookRequest.getStatus());
+        refBook.setDescription(bookRequest.getDescription());
+        refBook.setQuantity(bookRequest.getQuantity());
+        refBook.setPublisher(publisher);
+        bookRepository.save(refBook);
+
+        //update image
+        List<BookImageRequest> bookImageRequests = bookRequest.getImages();
+        updateBookImagesFromBookRequest(bookImageRequests, refBook);
+
+        //update price
+        PriceRequest priceRequest = bookRequest.getPrice();
+        updatePriceFromBookRequest(priceRequest, refBook);
+
+        //update categories
         List<CategoryRequest> categoryRequests = bookRequest.getCategories();
-        // Filter out existing categories in the system
-        List<Category> categories = categoryRepository.findCategoryByListIds(categoryRequests
-                        .stream().map(CategoryRequest::getCategoryId).toList())
-                .orElseThrow(() -> new DataNotFoundException("Category không tồn tại"));
+        updateCategoryFromBookRequest(categoryRequests, refBook);
 
-        List<BookCategory> bookCategories = refBook.getCategoryBooks();
+        //update author
+        List<AuthorRequest> authorRequests = bookRequest.getAuthors();
+        updateAuthorFromBookRequest(authorRequests, refBook);
 
-        //delete un-macthing categories
-        List<BookCategory> deletedBookCategorides = bookCategories.stream()
-                .filter(bookCategory -> !categories.contains(bookCategory.getCategory())).toList();
-        if (!deletedBookCategorides.isEmpty()) {
-            bookCategoryRepository.deleteAll(deletedBookCategorides);
+        //update property
+        List<PropertyRequest> propertyRequests = bookRequest.getProperties();
+        updatePropertyFromBookRequest(propertyRequests, refBook);
+
+        return CommonResponse.success("Cập nhật thành công");
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public CommonResponse<Map<String, Object>> getTopSeller() {
+        List<ClientBookCard> data = bookRepository.findTopSeller().orElse(new ArrayList<>());
+        Map<String, Object> res = new HashMap<>();
+        res.put("content", data.stream().map(clientBookCard -> BookCardResponse.builder()
+                        .bookId(clientBookCard.getBookId())
+                        .title(clientBookCard.getTitle())
+                        .thumbnail(clientBookCard.getThumbnail())
+                        .authorName(clientBookCard.getAuthorName())
+                        .categoryName(clientBookCard.getCategoryName())
+                        .publisherName(clientBookCard.getPublisherName())
+                        .averageRating(clientBookCard.getAverageRating())
+                        .basePrice(clientBookCard.getBasePrice())
+                        .discountPrice(clientBookCard.getDiscountPrice())
+                        .totalSalesCount(clientBookCard.getTotalSalesCount())
+                        .build())
+                .toList());
+        return CommonResponse.success(res);
+    }
+
+    /**
+     *
+     * @ Description : lg_ecommerce_be BookServiceImpl Member Field updatePropertyFromBookRequest
+     *<pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/14/2024           63200504    first creation
+     *<pre>
+     * @param propertyRequests
+     * @param refBook
+     */
+    private void updatePropertyFromBookRequest(List<PropertyRequest> propertyRequests, Book refBook) {
+
+        if (propertyRequests == null || propertyRequests.isEmpty()) {
+            return;
         }
 
-        //update new categories
-//        List<BookCategory> newBookCategorides = bookCategories.stream()
-//                .filter(bookCategory -> ).toList();
+       //collect origin property
+        Map<String, BookProperty> originalProperties = refBook.getBookProperties().stream()
+                .collect(Collectors.toMap(BookProperty::getBookPropertyId, bookProperty -> bookProperty));
 
-        return null;
+        //collect input property
+        Map<String, PropertyRequest> newProperties = new HashMap<>();
+        Map<String, BookProperty> existedProperties = new HashMap<>();
+        propertyRequests.forEach(propertyRequest -> {
+            if (propertyRequest.getBookPropertyId() != null) {
+                BookProperty existed = originalProperties.get(propertyRequest.getBookPropertyId());
+                existed.setValue(propertyRequest.getValue());
+                existedProperties.putIfAbsent(existed.getBookPropertyId(), existed);
+                originalProperties.keySet().remove(existed.getBookPropertyId());
+            }
+            else newProperties.put(propertyRequest.getName(), propertyRequest);
+        });
+
+        //delete properties
+        if (!originalProperties.isEmpty()) bookPropertyRepository.saveAll(originalProperties.values().stream().toList());
+
+        //update value for existed property
+        if (!existedProperties.isEmpty()) bookPropertyRepository.saveAll(existedProperties.values().stream().toList());
+
+        //update new property
+        if (!newProperties.isEmpty()) addPropertyFromBookRequest(newProperties.values().stream().toList(), refBook);
     }
+
+    /**
+     *
+     * @ Description : lg_ecommerce_be BookServiceImpl Member Field updateAuthorFromBookRequest
+     *<pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/13/2024           63200504    first creation
+     *<pre>
+     * @param authorRequests
+     * @param refBook
+     */
+    private void updateAuthorFromBookRequest(List<AuthorRequest> authorRequests, Book refBook){
+        //collect origin authors
+        Map<String, BookAuthor> originalAuthors = refBook.getAuthorBooks()
+                .stream().collect(Collectors.toMap(bookAuthor -> bookAuthor.getAuthor().getAuthorId().toLowerCase(), bookAuthor -> bookAuthor));
+
+        //Collect new author and deleted author
+        Map<String, AuthorRequest> newAuthorRequest = new HashMap<>();
+        authorRequests.forEach((authorRequest) -> {
+            if (authorRequest.getBookAuthorId() == null) newAuthorRequest.putIfAbsent(authorRequest.getName(), authorRequest);
+            else originalAuthors.keySet().remove(authorRequest.getBookAuthorId());
+        });
+
+        //delete author
+        if (!originalAuthors.isEmpty()) bookAuthorRepository.deleteAll(originalAuthors.values().stream().toList());
+
+        //update new author
+        if (!newAuthorRequest.isEmpty()) addAuthorFromBookRequest(newAuthorRequest.values().stream().toList(), refBook);
+    }
+
+    /**
+     *
+     * @ Description : lg_ecommerce_be BookServiceImpl Member Field updatePriceFromBookRequest
+     *<pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/13/2024           63200504    first creation
+     *<pre>
+     * @param priceRequest
+     * @param refBook
+     */
+    private void updatePriceFromBookRequest(PriceRequest priceRequest, Book refBook) {
+        Price price = refBook.getPrice();
+        price.setBasePrice(priceRequest.getBasePrice());
+        price.setDiscountPrice(priceRequest.getDiscountPrice());
+        priceRepository.save(price);
+    }
+
+    /**
+     *
+     * @ Description : lg_ecommerce_be BookServiceImpl Member Field updateBookImagesFromBookRequest
+     *<pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/13/2024           63200504    first creation
+     *<pre>
+     * @param images
+     * @param refBook
+     */
+    private void updateBookImagesFromBookRequest(List<BookImageRequest> images, Book refBook){
+        if (images == null || images.isEmpty()) { return; }
+
+        Map<String, BookImage> originalImages = refBook.getBookImages().stream()
+                .collect(Collectors.toMap(BookImage::getBookImageId, bookImage -> bookImage));
+
+        //collect new images and deleted images
+        List<BookImage> newBookImages = new ArrayList<>();
+        images.forEach(bookImageRequest -> {
+            if (bookImageRequest.getBookImageId() != null) originalImages.keySet().remove(bookImageRequest.getBookImageId());
+            else newBookImages.add(BookImage.builder()
+                            .bookImageId(UUID.randomUUID().toString())
+                            .imageUrl(bookImageRequest.getImageUrl())
+                            .book(refBook)
+                    .build());
+        });
+
+        //delete image
+        if (!originalImages.isEmpty()){
+            bookImageRepository.deleteAll(originalImages.values().stream().toList());
+        }
+
+        //update new images
+        if (!newBookImages.isEmpty()){
+            bookImageRepository.saveAll(newBookImages);
+        }
+    }
+
+
+    /**
+     *
+     * @ Description : lg_ecommerce_be BookServiceImpl Member Field updateCategoryFromBookRequest
+     *<pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/13/2024           63200504    first creation
+     *<pre>
+     * @param categoryRequests
+     * @param refBook
+     */
+    private void updateCategoryFromBookRequest(List<CategoryRequest> categoryRequests, Book refBook) {
+
+        List<String> ids = categoryRequests.stream().map(CategoryRequest::getCategoryId).toList();
+
+        //Collect all category that client enter
+        Map<String, Category> newCategories = categoryRepository.findCategoryByListIds(ids).orElseThrow(() -> new DataNotFoundException("Không có category nào tồn tại"))
+                .stream().collect(Collectors.toMap(Category::getCategoryId, category -> category));
+
+        //Collect existed category of book in database
+        List<BookCategory> existedCategories = bookCategoryRepository.findByIds(newCategories.keySet().stream().toList(), refBook.getBookId())
+                .orElse(new ArrayList<>());
+
+        //collect new category and deleted category
+        Map<String, BookCategory> deletedBooCategories = refBook.getCategoryBooks().stream()
+                .collect(Collectors.toMap(BookCategory::getBookCategoryId, bookCategory -> bookCategory));
+        existedCategories.forEach(bookCategory -> {
+            newCategories.keySet().remove(bookCategory.getCategory().getCategoryId());
+            deletedBooCategories.keySet().remove(bookCategory.getBookCategoryId());
+        });
+
+        //delete invalid category
+        bookCategoryRepository.deleteAll(deletedBooCategories.values().stream().toList());
+
+        //update new category
+        bookCategoryRepository.saveAll(newCategories.keySet().stream().map(id -> BookCategory.builder()
+                .bookCategoryId(UUID.randomUUID().toString())
+                .book(refBook)
+                .category(newCategories.get(id))
+                .build()).toList());
+    }
+
 
     /**
      *

@@ -29,7 +29,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CategoryDTO extends BaseResponse {
-    @JsonProperty("category_id")
     private String categoryId;
 
     private String name;

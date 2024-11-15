@@ -29,13 +29,13 @@ import org.hibernate.validator.constraints.Length;
 @NoArgsConstructor
 @Builder
 public class PropertyRequest {
-    private String propertyId;
+    private String bookPropertyId;
 
-    @NotBlank
+    @NotBlank(message = "Không được để trống tên thuộc tính")
     @Length(max = 50, message = "Độ dài của tên tên thuộc tính không được vượt quá 50 ký tự")
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "Không được để trống giá trị thuộc tính")
     @Length(max = 255, message = "Giá trị của thuộc tính không được vượt quá 255 ký tự")
     private String value;
 }

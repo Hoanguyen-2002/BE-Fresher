@@ -29,7 +29,7 @@ import org.hibernate.validator.constraints.Length;
 public class BookImageRequest {
     private String bookImageId;
 
-    @NotBlank
+    @NotBlank(message = "Không được để trống ảnh")
     @Length(max = 255, message = "Độ dài link ảnh không được vượt quá 255 ký tự")
     private String imageUrl;
 }

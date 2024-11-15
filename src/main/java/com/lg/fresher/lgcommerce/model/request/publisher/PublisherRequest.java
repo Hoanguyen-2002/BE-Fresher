@@ -29,7 +29,7 @@ import org.hibernate.validator.constraints.Length;
 public class PublisherRequest {
     private String publisherId;
 
-    @NotBlank
+    @NotBlank(message = "Không được để trống tên nhà xuất bản")
     @Length(max = 255, message = "Độ dài tên nhà xuất bản không được vượt quá 255 ký tự")
     private String name;
 }
