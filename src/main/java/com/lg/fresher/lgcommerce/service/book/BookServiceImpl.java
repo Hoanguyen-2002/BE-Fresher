@@ -206,6 +206,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public CommonResponse<StringResponse> updateBook(BookRequest bookRequest, String id) {
         Book refBook = bookRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("Không tìm thấy book có id: "+ id));
@@ -222,7 +223,7 @@ public class BookServiceImpl implements BookService {
         // update common information
         refBook.setTitle(bookRequest.getTitle());
         refBook.setThumbnail(bookRequest.getThumbnail());
-        refBook.setStatus(bookRequest.getStatus());
+        refBook.setStatus(bookRequest.getStatus() == null || refBook.getStatus());
         refBook.setDescription(bookRequest.getDescription());
         refBook.setQuantity(bookRequest.getQuantity());
         refBook.setPublisher(publisher);
@@ -287,30 +288,27 @@ public class BookServiceImpl implements BookService {
      * @param refBook
      */
     private void updatePropertyFromBookRequest(List<PropertyRequest> propertyRequests, Book refBook) {
-
-        if (propertyRequests == null || propertyRequests.isEmpty()) {
-            return;
-        }
-
-       //collect origin property
+        //collect origin property
         Map<String, BookProperty> originalProperties = refBook.getBookProperties().stream()
                 .collect(Collectors.toMap(BookProperty::getBookPropertyId, bookProperty -> bookProperty));
 
         //collect input property
         Map<String, PropertyRequest> newProperties = new HashMap<>();
         Map<String, BookProperty> existedProperties = new HashMap<>();
-        propertyRequests.forEach(propertyRequest -> {
-            if (propertyRequest.getBookPropertyId() != null) {
-                BookProperty existed = originalProperties.get(propertyRequest.getBookPropertyId());
-                existed.setValue(propertyRequest.getValue());
-                existedProperties.putIfAbsent(existed.getBookPropertyId(), existed);
-                originalProperties.keySet().remove(existed.getBookPropertyId());
-            }
-            else newProperties.put(propertyRequest.getName(), propertyRequest);
-        });
+        if (propertyRequests != null){
+            propertyRequests.forEach(propertyRequest -> {
+                if (propertyRequest.getBookPropertyId() != null) {
+                    BookProperty existed = originalProperties.get(propertyRequest.getBookPropertyId());
+                    existed.setValue(propertyRequest.getValue());
+                    existedProperties.putIfAbsent(existed.getBookPropertyId(), existed);
+                    originalProperties.keySet().remove(existed.getBookPropertyId());
+                }
+                else newProperties.put(propertyRequest.getName(), propertyRequest);
+            });
+        }
 
         //delete properties
-        if (!originalProperties.isEmpty()) bookPropertyRepository.saveAll(originalProperties.values().stream().toList());
+        if (!originalProperties.isEmpty()) bookPropertyRepository.deleteAll(originalProperties.values().stream().toList());
 
         //update value for existed property
         if (!existedProperties.isEmpty()) bookPropertyRepository.saveAll(existedProperties.values().stream().toList());
@@ -379,22 +377,29 @@ public class BookServiceImpl implements BookService {
      * @param refBook
      */
     private void updateBookImagesFromBookRequest(List<BookImageRequest> images, Book refBook){
-        if (images == null || images.isEmpty()) { return; }
 
-        Map<String, BookImage> originalImages = refBook.getBookImages().stream()
+        List<BookImage> bookImages = refBook.getBookImages();
+        if (bookImages == null) {
+            bookImages = new ArrayList<>(); // Initialize as an empty list if null
+            refBook.setBookImages(bookImages);
+        }
+
+        Map<String, BookImage> originalImages = bookImages.stream()
                 .collect(Collectors.toMap(BookImage::getBookImageId, bookImage -> bookImage));
 
         //collect new images and deleted images
         List<BookImage> newBookImages = new ArrayList<>();
-        images.forEach(bookImageRequest -> {
-            if (bookImageRequest.getBookImageId() != null) originalImages.keySet().remove(bookImageRequest.getBookImageId());
-            else newBookImages.add(BookImage.builder()
-                            .bookImageId(UUID.randomUUID().toString())
-                            .imageUrl(bookImageRequest.getImageUrl())
-                            .book(refBook)
-                    .build());
-        });
-
+        if (images != null) {
+            images.forEach(bookImageRequest -> {
+                if (bookImageRequest.getBookImageId() != null)
+                    originalImages.keySet().remove(bookImageRequest.getBookImageId());
+                else newBookImages.add(BookImage.builder()
+                        .bookImageId(UUID.randomUUID().toString())
+                        .imageUrl(bookImageRequest.getImageUrl())
+                        .book(refBook)
+                        .build());
+            });
+        }
         //delete image
         if (!originalImages.isEmpty()){
             bookImageRepository.deleteAll(originalImages.values().stream().toList());
@@ -423,8 +428,9 @@ public class BookServiceImpl implements BookService {
         List<String> ids = categoryRequests.stream().map(CategoryRequest::getCategoryId).toList();
 
         //Collect all category that client enter
-        Map<String, Category> newCategories = categoryRepository.findCategoryByListIds(ids).orElseThrow(() -> new DataNotFoundException("Không có category nào tồn tại"))
-                .stream().collect(Collectors.toMap(Category::getCategoryId, category -> category));
+        List<Category> inputCategories = categoryRepository.findCategoryByListIds(ids).orElse(new ArrayList<>());
+        if (inputCategories.isEmpty()) throw new DataNotNullException("Không tìm thấy danh mục hợp lệ");
+        Map<String, Category> newCategories = inputCategories.stream().collect(Collectors.toMap(Category::getCategoryId, category -> category));
 
         //Collect existed category of book in database
         List<BookCategory> existedCategories = bookCategoryRepository.findByIds(newCategories.keySet().stream().toList(), refBook.getBookId())
@@ -578,7 +584,9 @@ public class BookServiceImpl implements BookService {
         // Filter out existing categories in the system
         List<Category> categories = categoryRepository.findCategoryByListIds(categoryRequests
                         .stream().map(CategoryRequest::getCategoryId).toList())
-                .orElseThrow(() -> new DataNotFoundException("Category không tồn tại"));
+                .orElse(new ArrayList<>());
+
+        if (categories.isEmpty()) throw new DataNotNullException("Không tìm thấy danh mục hợp lệ");
 
         //save book_category in database
         bookCategoryRepository.saveAll(categories.stream().map(category ->

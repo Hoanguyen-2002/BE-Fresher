@@ -10,7 +10,6 @@ import com.lg.fresher.lgcommerce.model.response.admin.category.CategoryResponse;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.common.MetaData;
 import com.lg.fresher.lgcommerce.repository.category.CategoryRepository;
-import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,7 +127,6 @@ public class CategoryServiceImpl implements CategoryService {
      * @return
      */
     @Override
-    @Transactional
     public CommonResponse<Map<String,CategoryModel>> createCategory(CategoryRequestDTO categoryRequestDTO) {
         if (categoryRepository.findByName(categoryRequestDTO.getName()).isPresent()) {
             throw new DuplicateDataException("Danh mục với tên '" + categoryRequestDTO.getName() + "' đã tồn tại!");
@@ -149,7 +147,6 @@ public class CategoryServiceImpl implements CategoryService {
      * @return
      */
     @Override
-    @Transactional
     public CommonResponse<Map<String,CategoryModel>> updateCategory(CategoryRequestDTO categoryRequestDTO, String id) {
         if (!UUIDUtil.isValidUUID(id)) {
             throw new IllegalArgumentException("ID không hợp lệ!");

@@ -1,12 +1,14 @@
 package com.lg.fresher.lgcommerce.service.book;
 
 import com.lg.fresher.lgcommerce.entity.author.Author;
-import com.lg.fresher.lgcommerce.entity.book.*;
+import com.lg.fresher.lgcommerce.entity.book.Book;
+import com.lg.fresher.lgcommerce.entity.book.BookCategory;
+import com.lg.fresher.lgcommerce.entity.book.Price;
+import com.lg.fresher.lgcommerce.entity.book.Property;
 import com.lg.fresher.lgcommerce.entity.category.Category;
 import com.lg.fresher.lgcommerce.entity.publisher.Publisher;
 import com.lg.fresher.lgcommerce.exception.DuplicateDataException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
-import com.lg.fresher.lgcommerce.exception.data.DataNotNullException;
 import com.lg.fresher.lgcommerce.model.request.author.AuthorRequest;
 import com.lg.fresher.lgcommerce.model.request.book.BookImageRequest;
 import com.lg.fresher.lgcommerce.model.request.book.BookRequest;
@@ -16,21 +18,19 @@ import com.lg.fresher.lgcommerce.model.request.property.PropertyRequest;
 import com.lg.fresher.lgcommerce.model.request.publisher.PublisherRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.StringResponse;
+import com.lg.fresher.lgcommerce.model.response.admin.category.CategoryDTO;
 import com.lg.fresher.lgcommerce.model.response.author.AuthorResponse;
 import com.lg.fresher.lgcommerce.model.response.book.BookCardResponse;
 import com.lg.fresher.lgcommerce.model.response.book.BookResponse;
+import com.lg.fresher.lgcommerce.model.response.book.itf.ClientBookCard;
 import com.lg.fresher.lgcommerce.model.response.book_image.BookImageResponse;
-import com.lg.fresher.lgcommerce.model.response.admin.category.CategoryDTO;
 import com.lg.fresher.lgcommerce.model.response.property.PropertyResponse;
 import com.lg.fresher.lgcommerce.model.response.publisher.PublisherResponse;
 import com.lg.fresher.lgcommerce.repository.author.AuthorRepository;
 import com.lg.fresher.lgcommerce.repository.book.*;
-import com.lg.fresher.lgcommerce.model.response.book.itf.ClientBookCard;
 import com.lg.fresher.lgcommerce.repository.category.CategoryRepository;
 import com.lg.fresher.lgcommerce.repository.publisher.PublisherRepository;
 import com.lg.fresher.lgcommerce.utils.JsonUtils;
-import io.netty.util.internal.ObjectUtil;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -151,66 +151,73 @@ public class BookServiceImplTest {
 
     @Test
     public void getBookDetailByClient_BookExists_ReturnsBookResponse() {
-        Map<String, Object> bookDetails = new HashMap<>();
-        bookDetails.put("book_id", "123");
-        bookDetails.put("title", "Sample Book");
-        bookDetails.put("description", "This is a sample book description");
-        bookDetails.put("quantity", 10);
-        bookDetails.put("thumbnail", "http://example.com/thumbnail.jpg");
-        bookDetails.put("publisherName", "Sample Publisher");
-        bookDetails.put("book_image_json", "[{\"url\":\"http://example.com/image1.jpg\"}]");
-        bookDetails.put("book_author_json", "[{\"name\":\"Author 1\"}]");
-        bookDetails.put("book_category_json", "[{\"name\":\"Category 1\"}]");
-        bookDetails.put("base_price", 100.0);
-        bookDetails.put("discount_price", 90.0);
-        bookDetails.put("book_property_json", "[{\"name\":\"Property 1\", \"value\":\"Value 1\"}]");
-        bookDetails.put("totalReviewCounts", 50);
-        bookDetails.put("averageRating", 4.5);
-        bookDetails.put("totalSalesCount", 200);
+        Map<String, Object> mockBookData = new HashMap<>();
+        // Setup mock data to simulate what would be returned by the SQL query
+        mockBookData = new HashMap<>();
+        mockBookData.put("book_id", "123");
+        mockBookData.put("title", "Test Book Title");
+        mockBookData.put("description", "Test Book Description");
+        mockBookData.put("quantity", 10);
+        mockBookData.put("thumbnail", "test-thumbnail-url");
+        mockBookData.put("publisher", "{\"publisherId\":\"pub1\",\"name\":\"Test Publisher\"}");
+        mockBookData.put("base_price", "100.0");
+        mockBookData.put("discount_price", "80.0");
+        mockBookData.put("book_image_json", "[{\"bookImageId\":\"img1\",\"imageUrl\":\"image1-url\"}]");
+        mockBookData.put("book_author_json", "[{\"bookAuthorId\":\"auth1\",\"name\":\"Author Name\"}]");
+        mockBookData.put("book_category_json", "[{\"categoryId\":\"cat1\",\"name\":\"Category Name\"}]");
+        mockBookData.put("book_property_json", "[{\"bookPropertyId\":\"prop1\",\"name\":\"Property Name\",\"value\":\"Property Value\"}]");
+        mockBookData.put("totalReviewCounts", 20);
+        mockBookData.put("averageRating", 4.5);
+        mockBookData.put("totalSalesCount", 150);
 
-        // Giả lập dữ liệu trả về từ bookRepository và jsonUtils
-        when(bookRepository.findBookDetailById("123")).thenReturn(Optional.of(bookDetails));
-        when(jsonUtils.fromJson(eq("[{\"url\":\"http://example.com/image1.jpg\"}]"), eq(BookImageResponse[].class)))
-                .thenReturn(new BookImageResponse[]{BookImageResponse.builder().imageUrl("http://example.com/image1.jpg").build()});
-        when(jsonUtils.fromJson(eq("[{\"name\":\"Author 1\"}]"), eq(AuthorResponse[].class)))
-                .thenReturn(new AuthorResponse[]{AuthorResponse.builder().name("Author 1").build()});
-        when(jsonUtils.fromJson(eq("[{\"name\":\"Category 1\"}]"), eq(CategoryDTO[].class)))
-                .thenReturn(new CategoryDTO[]{CategoryDTO.builder().name("Category 1").build()});
-        when(jsonUtils.fromJson(eq("[{\"name\":\"Property 1\", \"value\":\"Value 1\"}]"), eq(PropertyResponse[].class)))
-                .thenReturn(new PropertyResponse[]{PropertyResponse.builder().name("Property 1").value("Value 1").build()});
+        // Mock the repository to return the mockBookData
+        when(bookRepository.findBookDetailById("123")).thenReturn(Optional.of(mockBookData));
 
-        // Gọi phương thức cần kiểm tra
+        // Mock jsonUtils deserialization for complex JSON objects
+        when(jsonUtils.fromJson("{\"publisherId\":\"pub1\",\"name\":\"Test Publisher\"}", PublisherResponse.class))
+                .thenReturn(PublisherResponse.builder().publisherId("pub1").name("Test Publisher").build());
+
+        when(jsonUtils.fromJson("[{\"bookImageId\":\"img1\",\"imageUrl\":\"image1-url\"}]", BookImageResponse[].class))
+                .thenReturn(new BookImageResponse[]{BookImageResponse.builder().bookImageId("img1").imageUrl("image1-url").build()});
+
+        when(jsonUtils.fromJson("[{\"bookAuthorId\":\"auth1\",\"name\":\"Author Name\"}]", AuthorResponse[].class))
+                .thenReturn(new AuthorResponse[]{AuthorResponse.builder().bookAuthorId("auth1").name("Author Name").build()});
+
+        when(jsonUtils.fromJson("[{\"categoryId\":\"cat1\",\"name\":\"Category Name\"}]", CategoryDTO[].class))
+                .thenReturn(new CategoryDTO[]{CategoryDTO.builder().categoryId("cat1").name("Category Name").build()});
+
+        when(jsonUtils.fromJson("[{\"bookPropertyId\":\"prop1\",\"name\":\"Property Name\",\"value\":\"Property Value\"}]", PropertyResponse[].class))
+                .thenReturn(new PropertyResponse[]{PropertyResponse.builder().bookPropertyId("prop1").name("Property Name").value("Property Value").build()});
+
+        // Call the method under test
         CommonResponse<Map<String, Object>> response = bookService.getBookDetailByClient("123");
 
-        // Kiểm tra kết quả
+        // Assertions
         assertNotNull(response);
-        assertEquals("123", ((List<BookResponse>) response.getData().get("content")).get(0).getBookId());
-        assertEquals("Sample Book", ((List<BookResponse>) response.getData().get("content")).get(0).getTitle());
-        assertEquals("This is a sample book description", ((List<BookResponse>) response.getData().get("content")).get(0).getDescription());
-        assertEquals(10, ((List<BookResponse>) response.getData().get("content")).get(0).getQuantity());
-        assertEquals("http://example.com/thumbnail.jpg", ((List<BookResponse>) response.getData().get("content")).get(0).getThumbnail());
-        assertEquals(100.0, ((List<BookResponse>) response.getData().get("content")).get(0).getPrice().getBasePrice());
-        assertEquals(90.0, ((List<BookResponse>) response.getData().get("content")).get(0).getPrice().getDiscountPrice());
-        assertEquals(50, ((List<BookResponse>) response.getData().get("content")).get(0).getTotalReviewsCount());
-        assertEquals(4.5, ((List<BookResponse>) response.getData().get("content")).get(0).getAverageRating());
-        assertEquals(200, ((List<BookResponse>) response.getData().get("content")).get(0).getTotalSalesCount());
+        assertTrue(response.getData().containsKey("content"));
+        BookResponse bookRes = (BookResponse) response.getData().get("content");
 
-        assertNotNull(((List<BookResponse>) response.getData().get("content")).get(0).getImages());
-        assertEquals(1, ((List<BookResponse>) response.getData().get("content")).get(0).getImages().size());
-        assertEquals("http://example.com/image1.jpg", ((List<BookResponse>) response.getData().get("content")).get(0).getImages().get(0).getImageUrl());
-
-        assertNotNull(((List<BookResponse>) response.getData().get("content")).get(0).getAuthors());
-        assertEquals(1, ((List<BookResponse>) response.getData().get("content")).get(0).getAuthors().size());
-        assertEquals("Author 1", ((List<BookResponse>) response.getData().get("content")).get(0).getAuthors().get(0).getName());
-
-        assertNotNull(((List<BookResponse>) response.getData().get("content")).get(0).getCategories());
-        assertEquals(1, ((List<BookResponse>) response.getData().get("content")).get(0).getCategories().size());
-        assertEquals("Category 1", ((List<BookResponse>) response.getData().get("content")).get(0).getCategories().get(0).getName());
-
-        assertNotNull(((List<BookResponse>) response.getData().get("content")).get(0).getProperties());
-        assertEquals(1, ((List<BookResponse>) response.getData().get("content")).get(0).getProperties().size());
-        assertEquals("Property 1", ((List<BookResponse>) response.getData().get("content")).get(0).getProperties().get(0).getName());
-        assertEquals("Value 1", ((List<BookResponse>) response.getData().get("content")).get(0).getProperties().get(0).getValue());
+        // Verify BookResponse details
+        assertEquals("123", bookRes.getBookId());
+        assertEquals("Test Book Title", bookRes.getTitle());
+        assertEquals("Test Book Description", bookRes.getDescription());
+        assertEquals(10, bookRes.getQuantity());
+        assertEquals("test-thumbnail-url", bookRes.getThumbnail());
+        assertEquals("Test Publisher", bookRes.getPublisher().getName());
+        assertEquals(100.0, bookRes.getPrice().getBasePrice());
+        assertEquals(80.0, bookRes.getPrice().getDiscountPrice());
+        assertEquals(1, bookRes.getImages().size());
+        assertEquals("image1-url", bookRes.getImages().get(0).getImageUrl());
+        assertEquals(1, bookRes.getAuthors().size());
+        assertEquals("Author Name", bookRes.getAuthors().get(0).getName());
+        assertEquals(1, bookRes.getCategories().size());
+        assertEquals("Category Name", bookRes.getCategories().get(0).getName());
+        assertEquals(1, bookRes.getProperties().size());
+        assertEquals("Property Name", bookRes.getProperties().get(0).getName());
+        assertEquals("Property Value", bookRes.getProperties().get(0).getValue());
+        assertEquals(20, bookRes.getTotalReviewsCount());
+        assertEquals(4.5, bookRes.getAverageRating());
+        assertEquals(150, bookRes.getTotalSalesCount());
     }
 
     @Test
@@ -305,7 +312,78 @@ public class BookServiceImplTest {
 
     @Test
     public void updateBook_Successfully() {
+        // Initialize BookRequest
+        BookRequest bookRequest = BookRequest.builder()
+                .bookId("123")
+                .title("Updated Title")
+                .thumbnail("new-thumbnail-url")
+                .status(true)
+                .description("Updated description")
+                .quantity(20)
+                .publisher(new PublisherRequest("456", "New Publisher"))
+                .price(new PriceRequest(null, 100.0, 80.0))
+                .categories(List.of(new CategoryRequest("789", "Category 1")))
+                .authors(List.of(new AuthorRequest(null, "Author 1")))
+                .properties(List.of(new PropertyRequest(null, "Property 1", "Value 1")))
+                .images(List.of(new BookImageRequest(null, "image-url-1")))
+                .build();
 
+        // Initialize an existing Book for repository to return
+        Book existingBook = new Book();
+        existingBook.setBookId("123");
+        existingBook.setTitle("Existing Title");
+        existingBook.setStatus(true);
+
+        // Initialize the Price object to avoid NullPointerException
+        Price price = new Price();
+        price.setPriceId("price123");
+        price.setBasePrice(50.0);
+        price.setDiscountPrice(45.0);
+        existingBook.setPrice(price);
+
+        // Initialize categories in the repository mock
+        Category category = Category.builder().categoryId("123").name("category name").build();
+        when(categoryRepository.findCategoryByListIds(anyList())).thenReturn(Optional.of(List.of(category)));
+
+        // Initialize other required fields
+        existingBook.setCategoryBooks(List.of(BookCategory.builder().bookCategoryId("123").book(existingBook).category(category).build()));
+
+        // Initialize authorBooks list to avoid NullPointerException
+        existingBook.setAuthorBooks(new ArrayList<>());
+
+        // Initialize bookProperties list to avoid NullPointerException
+        existingBook.setBookProperties(new ArrayList<>());
+
+        // Mock behavior for propertyRepository.findByName to return a list with a valid Property
+        Property mockProperty = new Property();
+        mockProperty.setPropertyId("prop1");
+        mockProperty.setName("Property 1");
+
+        when(propertyRepository.findByName(anyList())).thenReturn(Optional.of(List.of(mockProperty)));
+
+        // Mock repository behavior
+        when(bookRepository.findById("123")).thenReturn(Optional.of(existingBook));
+        when(bookRepository.existsByTitle("Updated Title")).thenReturn(false);
+
+        // Configure behavior for the publisher repository
+        when(publisherRepository.findByName("new publisher")).thenReturn(Optional.empty());
+        when(publisherRepository.save(any())).thenAnswer(invocation -> {
+            Publisher publisher = invocation.getArgument(0);
+            publisher.setPublisherId(UUID.randomUUID().toString());
+            return publisher;
+        });
+
+        // Call the updateBook method
+        CommonResponse<StringResponse> response = bookService.updateBook(bookRequest, "123");
+
+        // Verify interactions and repository updates
+        verify(bookRepository, times(1)).findById("123");
+        verify(bookRepository, times(1)).save(existingBook);
+        verify(publisherRepository, times(1)).findByName("new publisher");
+
+        // Assertions on the response
+        assertNotNull(response);
+        assertEquals("Cập nhật thành công", response.getMsg());
     }
 
     @Test
