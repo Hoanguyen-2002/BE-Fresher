@@ -41,6 +41,10 @@ spring:
       starttls:
        enable: true
 
+  data:
+    elasticsearch:
+      cluster-name: docker-cluster
+      cluster-nodes: localhost:9200
 
   jpa:
     open-in-view: true

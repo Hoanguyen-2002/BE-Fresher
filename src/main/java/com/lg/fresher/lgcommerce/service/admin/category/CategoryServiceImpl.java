@@ -4,11 +4,13 @@ import com.lg.fresher.lgcommerce.entity.category.Category;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
 import com.lg.fresher.lgcommerce.exception.DuplicateDataException;
 import com.lg.fresher.lgcommerce.mapping.category.CategoryMapper;
+import com.lg.fresher.lgcommerce.model.document.CategoryDocument;
 import com.lg.fresher.lgcommerce.model.request.category.CategoryRequestDTO;
 import com.lg.fresher.lgcommerce.model.response.admin.category.CategoryModel;
 import com.lg.fresher.lgcommerce.model.response.admin.category.CategoryResponse;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.common.MetaData;
+import com.lg.fresher.lgcommerce.repository.category.CategoryElasticsearchRepository;
 import com.lg.fresher.lgcommerce.repository.category.CategoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +45,7 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final CategoryElasticsearchRepository categoryElasticsearchRepository;
     private static final Logger logger = LoggerFactory.getLogger(CategoryServiceImpl.class);
 
     /**
@@ -63,9 +66,10 @@ public class CategoryServiceImpl implements CategoryService {
      * 11/6/2024          63200485    first creation
      *<pre>     */
     @Autowired
-    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper, CategoryElasticsearchRepository categoryElasticsearchRepository) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
+        this.categoryElasticsearchRepository = categoryElasticsearchRepository;
     }
 
 
@@ -166,35 +170,73 @@ public class CategoryServiceImpl implements CategoryService {
         return new CommonResponse<>(content);
     }
 
-    /**
-     *
-     * @param keyword
-     * @return
-     */
-    @Override
-    public CommonResponse<CategoryResponse> searchCategory(String keyword, int pageNo, int pageSize) {
-        pageNo = Math.max(0, pageNo - 1);
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
-        Page<Category> categoriesPage;
+//    /**
+//     *
+//     * @param keyword
+//     * @return
+//     */
+//    @Override
+//    public CommonResponse<CategoryResponse> searchCategory(String keyword, int pageNo, int pageSize) {
+//        pageNo = Math.max(0, pageNo - 1);
+//        Pageable pageable = PageRequest.of(pageNo, pageSize);
+//        Page<Category> categoriesPage;
+//
+//        if (keyword == null || keyword.trim().isEmpty()) {
+//            categoriesPage = categoryRepository.findAll(pageable);
+//        } else {
+//            categoriesPage = categoryRepository.searchByKeyword(keyword, pageable);
+//        }
+//        List<CategoryModel> content = categoriesPage.getContent().stream()
+//                .map(categoryMapper::toModel)
+//                .toList();
+//
+//        MetaData metadata = new MetaData(
+//                categoriesPage.getTotalElements(),
+//                pageNo + 1 ,
+//                pageSize
+//        );
+//
+//        CategoryResponse categoryResponse = new CategoryResponse();
+//        categoryResponse.setContent(content);
+//        categoryResponse.setMetadata(metadata);
+//        return new CommonResponse<>(categoryResponse);
+//    }
 
-        if (keyword == null || keyword.trim().isEmpty()) {
-            categoriesPage = categoryRepository.findAll(pageable);
-        } else {
-            categoriesPage = categoryRepository.searchByKeyword(keyword, pageable);
-        }
-        List<CategoryModel> content = categoriesPage.getContent().stream()
-                .map(categoryMapper::toModel)
+    @Override
+    public void syncDatabaseToElasticsearch() {
+        List<Category> categories = categoryRepository.findAll();
+        List<CategoryDocument> documents = categories.stream().map(category -> {
+            CategoryDocument doc = new CategoryDocument();
+            doc.setCategoryId(category.getCategoryId());
+            doc.setName(category.getName());
+            return doc;
+        }).toList();
+        categoryElasticsearchRepository.saveAll(documents);
+    }
+
+    @Override
+    public CommonResponse<CategoryResponse> searchCategoryInElasticsearch(String keyword, int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(Math.max(0, pageNo - 1), pageSize);
+        List<CategoryDocument> searchResults = categoryElasticsearchRepository.findByNameContainingIgnoreCase(keyword);
+        List<CategoryModel> content = searchResults.stream()
+                .map(doc -> {
+                    CategoryModel model = new CategoryModel();
+                    model.setCategoryId(doc.getCategoryId());
+                    model.setName(doc.getName());
+                    return model;
+                })
                 .toList();
 
         MetaData metadata = new MetaData(
-                categoriesPage.getTotalElements(),
-                pageNo + 1 ,
+                content.size(),
+                pageNo,
                 pageSize
         );
 
-        CategoryResponse categoryResponse = new CategoryResponse();
-        categoryResponse.setContent(content);
-        categoryResponse.setMetadata(metadata);
-        return new CommonResponse<>(categoryResponse);
+        CategoryResponse response = new CategoryResponse();
+        response.setContent(content);
+        response.setMetadata(metadata);
+
+        return new CommonResponse<>(response);
     }
 }
