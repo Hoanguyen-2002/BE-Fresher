@@ -125,37 +125,22 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.updateCategory(categoryRequestDTO, categoryId));
     }
 
-//    /**
-//     *
-//     * @ Description : lg_ecommerce_be CategoryController Member Field searchCategories
-//     *<pre>
-//     * Date of Revision Modifier Revision
-//     * ---------------  ---------   -----------------------------------------------
-//     * 11/6/2024           63200485    first creation
-//     *<pre>
-//     * @param keyword
-//     * @return  ResponseEntity<CommonResponse<List<CategoryModel>>>
-//     */
-//    @GetMapping("/search")
-//    public ResponseEntity<CommonResponse<CategoryResponse>> searchCategories(
-//            @RequestParam(value = "keyword", required = false) String keyword,
-//            @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
-//            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
-//        return ResponseEntity.ok(categoryService.searchCategory(keyword, pageNo, pageSize));
-//    }
+    /**
+     *
+     * @ Description : lg_ecommerce_be CategoryController Member Field searchCategories
+     *<pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/6/2024           63200485    first creation
+     *<pre>
+     * @param keyword
+     * @return  ResponseEntity<CommonResponse<List<CategoryModel>>>
+     */
     @GetMapping("/search")
     public ResponseEntity<CommonResponse<CategoryResponse>> searchCategories(
-        @RequestParam(value = "keyword", required = false) String keyword,
-        @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
-        @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-        @RequestParam(value = "useElasticsearch", defaultValue = "true") boolean useElasticsearch) {
-
-    return ResponseEntity.ok(categoryService.searchCategoryInElasticsearch(keyword, pageNo, pageSize));
-    }
-
-    @PostMapping("/sync-elasticsearch")
-    public ResponseEntity<String> syncDataToElasticsearch() {
-        categoryService.syncDatabaseToElasticsearch();
-        return ResponseEntity.ok("Data synchronized to Elasticsearch.");
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+        return ResponseEntity.ok(categoryService.searchCategory(keyword, pageNo, pageSize));
     }
 }
