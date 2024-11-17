@@ -143,19 +143,15 @@ public class CategoryController {
 //            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
 //        return ResponseEntity.ok(categoryService.searchCategory(keyword, pageNo, pageSize));
 //    }
+
+
     @GetMapping("/search")
     public ResponseEntity<CommonResponse<CategoryResponse>> searchCategories(
         @RequestParam(value = "keyword", required = false) String keyword,
         @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
-        @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-        @RequestParam(value = "useElasticsearch", defaultValue = "true") boolean useElasticsearch) {
+        @RequestParam(value = "pageSize", defaultValue = "10") int pageSize
+    ) {
 
     return ResponseEntity.ok(categoryService.searchCategoryInElasticsearch(keyword, pageNo, pageSize));
-    }
-
-    @PostMapping("/sync-elasticsearch")
-    public ResponseEntity<String> syncDataToElasticsearch() {
-        categoryService.syncDatabaseToElasticsearch();
-        return ResponseEntity.ok("Data synchronized to Elasticsearch.");
     }
 }

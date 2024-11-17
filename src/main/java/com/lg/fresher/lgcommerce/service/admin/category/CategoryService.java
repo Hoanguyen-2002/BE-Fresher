@@ -29,6 +29,5 @@ public interface CategoryService {
     CommonResponse <Map<String,CategoryModel>> createCategory(CategoryRequestDTO categoryRequestDTO);
     CommonResponse<Map<String,CategoryModel>> updateCategory(CategoryRequestDTO categoryRequestDTO , String id);
     //CommonResponse<CategoryResponse> searchCategory(String keyword, int pageNo, int pageSize);
-    void syncDatabaseToElasticsearch();
     CommonResponse<CategoryResponse> searchCategoryInElasticsearch(String keyword, int pageNo, int pageSize);
 }

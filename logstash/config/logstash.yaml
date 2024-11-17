@@ -1,0 +1,22 @@
+# Logstash Configuration File
+
+# HTTP API host
+http.host: "0.0.0.0"
+
+# HTTP API port (mặc định là 9600)
+http.port: 9600-9700
+
+# Logging
+log.level: info
+path.logs: /usr/share/logstash/logs
+
+# X-Pack Monitoring (tắt để tránh lỗi nếu không sử dụng X-Pack)
+xpack.monitoring.enabled: false
+
+# Pipeline Settings
+pipeline.workers: 2
+pipeline.batch.size: 125
+pipeline.batch.delay: 50
+
+# Path Settings
+path.data: /usr/share/logstash/data

@@ -10,6 +10,7 @@ services:
       - es-net
     ports:
       - 9200:9200
+
   kibana:
     container_name: kb-container
     image: docker.elastic.co/kibana/kibana:7.17.0
@@ -21,6 +22,20 @@ services:
       - elasticsearch
     ports:
       - 5601:5601
+
+  logstash:
+    container_name: logstash-container
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    environment:
+      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+    networks:
+      - es-net
+    depends_on:
+      - elasticsearch
+    ports:
+      - 5044:5044
+      - 9600:9600
+
 networks:
   es-net:
     driver: bridge

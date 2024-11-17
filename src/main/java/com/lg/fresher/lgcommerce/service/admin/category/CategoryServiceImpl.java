@@ -12,6 +12,9 @@ import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.common.MetaData;
 import com.lg.fresher.lgcommerce.repository.category.CategoryElasticsearchRepository;
 import com.lg.fresher.lgcommerce.repository.category.CategoryRepository;
+import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  *
@@ -202,41 +207,38 @@ public class CategoryServiceImpl implements CategoryService {
 //        return new CommonResponse<>(categoryResponse);
 //    }
 
-    @Override
-    public void syncDatabaseToElasticsearch() {
-        List<Category> categories = categoryRepository.findAll();
-        List<CategoryDocument> documents = categories.stream().map(category -> {
-            CategoryDocument doc = new CategoryDocument();
-            doc.setCategoryId(category.getCategoryId());
-            doc.setName(category.getName());
-            return doc;
-        }).toList();
-        categoryElasticsearchRepository.saveAll(documents);
-    }
 
     @Override
     public CommonResponse<CategoryResponse> searchCategoryInElasticsearch(String keyword, int pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(Math.max(0, pageNo - 1), pageSize);
-        List<CategoryDocument> searchResults = categoryElasticsearchRepository.findByNameContainingIgnoreCase(keyword);
-        List<CategoryModel> content = searchResults.stream()
-                .map(doc -> {
-                    CategoryModel model = new CategoryModel();
-                    model.setCategoryId(doc.getCategoryId());
-                    model.setName(doc.getName());
-                    return model;
-                })
-                .toList();
+
+        pageNo = Math.max(0, pageNo - 1); // Pageable bắt đầu từ 0
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+
+        Page<CategoryDocument> resultPage = categoryElasticsearchRepository.findByKeyword(keyword, pageable);
+
+        if (resultPage.isEmpty()) {
+            logger.info("No results found for keyword '{}'. Returning all categories.", keyword);
+            resultPage = categoryElasticsearchRepository.findAll(pageable);
+        }
+
+        List<CategoryModel> content = resultPage.getContent().stream()
+                .map(doc -> new CategoryModel(
+                        doc.getCategoryId(),
+                        doc.getName(),
+                        doc.getCreatedAt(), doc.getUpdatedAt(), doc.getCreatedBy(), doc.getUpdatedBy()))
+                .collect(Collectors.toList());
 
         MetaData metadata = new MetaData(
-                content.size(),
-                pageNo,
+                resultPage.getTotalElements(),
+                pageNo + 1,
                 pageSize
         );
 
-        CategoryResponse response = new CategoryResponse();
-        response.setContent(content);
-        response.setMetadata(metadata);
+        // Tạo phản hồi
+        CategoryResponse categoryResponse = new CategoryResponse();
+        categoryResponse.setMetadata(metadata);
+        categoryResponse.setContent(content);
 
-        return new CommonResponse<>(response);
+        return new CommonResponse<>(categoryResponse);
     }
 }
