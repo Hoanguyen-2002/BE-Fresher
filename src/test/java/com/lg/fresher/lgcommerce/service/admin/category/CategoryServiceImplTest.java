@@ -138,28 +138,28 @@ class CategoryServiceImplTest {
     }
 
 
-//    @Test
-//    void testSearchCategory_WithKeyword() {
-//        List<Category> categories = List.of(category);
-//        Page<Category> categoriesPage = new PageImpl<>(categories);
-//        when(categoryRepository.searchByKeyword(anyString(), any(Pageable.class))).thenReturn(categoriesPage);
-//        when(categoryMapper.toModel(any(Category.class))).thenReturn(categoryModel);
-//        CommonResponse<CategoryResponse> response = categoryServiceImpl.searchCategory("Test", 1, 10);
-//        assertNotNull(response);
-//        assertEquals(1, response.getData().getContent().size());
-//        verify(categoryRepository, times(1)).searchByKeyword(anyString(), any(Pageable.class));
-//    }
-//
-//
-//    @Test
-//    void testSearchCategory_WithoutKeyword() {
-//        List<Category> categories = List.of(category);
-//        Page<Category> categoriesPage = new PageImpl<>(categories);
-//        when(categoryRepository.findAll(any(Pageable.class))).thenReturn(categoriesPage);
-//        when(categoryMapper.toModel(any(Category.class))).thenReturn(categoryModel);
-//        CommonResponse<CategoryResponse> response = categoryServiceImpl.searchCategory(null, 1, 10);
-//        assertNotNull(response);
-//        assertEquals(1, response.getData().getContent().size());
-//        verify(categoryRepository, times(1)).findAll(any(Pageable.class));
-//    }
+    @Test
+    void testSearchCategory_WithKeyword() {
+        List<Category> categories = List.of(category);
+        Page<Category> categoriesPage = new PageImpl<>(categories);
+        when(categoryRepository.searchByKeyword(anyString(), any(Pageable.class))).thenReturn(categoriesPage);
+        when(categoryMapper.toModel(any(Category.class))).thenReturn(categoryModel);
+        CommonResponse<CategoryResponse> response = categoryServiceImpl.searchCategory("Test", 1, 10);
+        assertNotNull(response);
+        assertEquals(1, response.getData().getContent().size());
+        verify(categoryRepository, times(1)).searchByKeyword(anyString(), any(Pageable.class));
+    }
+
+
+    @Test
+    void testSearchCategory_WithoutKeyword() {
+        List<Category> categories = List.of(category);
+        Page<Category> categoriesPage = new PageImpl<>(categories);
+        when(categoryRepository.findAll(any(Pageable.class))).thenReturn(categoriesPage);
+        when(categoryMapper.toModel(any(Category.class))).thenReturn(categoryModel);
+        CommonResponse<CategoryResponse> response = categoryServiceImpl.searchCategory(null, 1, 10);
+        assertNotNull(response);
+        assertEquals(1, response.getData().getContent().size());
+        verify(categoryRepository, times(1)).findAll(any(Pageable.class));
+    }
 }
