@@ -7,6 +7,8 @@ import com.lg.fresher.lgcommerce.entity.account.Account;
 import com.lg.fresher.lgcommerce.entity.account.Address;
 import com.lg.fresher.lgcommerce.entity.account.Profile;
 import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
+import com.lg.fresher.lgcommerce.exception.auth.AccountStatusException;
+import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
 import com.lg.fresher.lgcommerce.mapping.account.AccountMapper;
 import com.lg.fresher.lgcommerce.model.request.account.UpdateAccountRequest;
 import com.lg.fresher.lgcommerce.model.request.address.UpdateAddressRequest;
@@ -42,6 +44,7 @@ import java.util.Map;
  * 11/6/2024       63200502      first creation
  * 11/8/2024       63200502      add update account profile
  * 11/12/2024      63200502      add method to get my info
+ * 11/15/2024      63200502      update checking account status
  */
 @Service
 @RequiredArgsConstructor
@@ -55,7 +58,7 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public CommonResponse<Map<String, Object>> getAccountInfo(String id) {
         Account account = accountRepository.findById(id).orElseThrow(() ->
-                new InvalidRequestException(Status.FAIL_USER_NOT_FOUND));
+                new DataNotFoundException(Status.FAIL_USER_NOT_FOUND.label()));
         AccountInfoResponse accountInfoResponse = accountMapper.toAccountInfoResponse(account);
         Map<String, Object> res = new HashMap<>();
         res.put("content", accountInfoResponse);
@@ -67,8 +70,12 @@ public class AccountServiceImpl implements AccountService {
     public CommonResponse<StringResponse> updateAccountInfo(UpdateAccountRequest updateAccountRequest) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Account account = accountRepository.findById(userDetails.getUserId()).orElseThrow(
-                () -> new InvalidRequestException(Status.FAIL_USER_NOT_FOUND)
+                () -> new DataNotFoundException(Status.FAIL_USER_NOT_FOUND.label())
         );
+
+        if(account.getStatus() == AccountStatus.BANNED){
+            throw  new AccountStatusException(Status.FAIL_USER_IS_BANNED);
+        }
 
         updateUserProfile(account.getProfile(), updateAccountRequest);
         updateUserAddress(account, updateAccountRequest);
@@ -77,13 +84,14 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public CommonResponse<Map<String, Object>> getMyInfo() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Account account = accountRepository.findById(userDetails.getUserId()).orElseThrow(
-                () -> new InvalidRequestException(Status.FAIL_USER_NOT_FOUND)
+                () -> new DataNotFoundException(Status.FAIL_USER_NOT_FOUND.label())
         );
         if(account.getStatus() == AccountStatus.BANNED){
-            throw  new InvalidRequestException(Status.FAIL_USER_IS_BANNED);
+            throw  new AccountStatusException(Status.FAIL_USER_IS_BANNED);
         }
         AccountInfoResponse accountInfoResponse = accountMapper.toAccountInfoResponse(account);
         Map<String, Object> res = new HashMap<>();
@@ -96,9 +104,9 @@ public class AccountServiceImpl implements AccountService {
         if (request.getListAddress() != null) {
             List<Address> existingAddresses = account.getAddress();
             for (UpdateAddressRequest updateRequest : request.getListAddress()) {
-                if (updateRequest.getAddresId() != null) {
+                if (updateRequest.getAddressId() != null && !updateRequest.getAddressId().isEmpty()) {
                     Address existingAddress = existingAddresses.stream()
-                            .filter(address -> address.getAddressId().equals(updateRequest.getAddresId()))
+                            .filter(address -> address.getAddressId().equals(updateRequest.getAddressId()))
                             .findFirst()
                             .orElseThrow(() -> new InvalidRequestException(Status.UPDATE_ACCOUNT_FAIL_ADDRESS_NOT_FOUND));
                     existingAddress.setCity(updateRequest.getCity());

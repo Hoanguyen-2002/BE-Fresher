@@ -5,6 +5,7 @@ import com.lg.fresher.lgcommerce.constant.Status;
 import com.lg.fresher.lgcommerce.entity.account.Account;
 import com.lg.fresher.lgcommerce.entity.account.Profile;
 import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
+import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
 import com.lg.fresher.lgcommerce.mapping.account.AccountMapper;
 import com.lg.fresher.lgcommerce.model.request.account.UpdateAccountRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
@@ -109,9 +110,9 @@ public class AccountServiceImplTest {
 
         UserDetailsImpl userDetails = new UserDetailsImpl("uniqueId", null, null, null, null);
         Mockito.when(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).thenReturn(userDetails);
-        Mockito.when(accountRepository.findById(userDetails.getUserId())).thenThrow(new InvalidRequestException(Status.FAIL_USER_NOT_FOUND));
+        Mockito.when(accountRepository.findById(userDetails.getUserId())).thenThrow(new DataNotFoundException(Status.FAIL_USER_NOT_FOUND.label()));
 
-        Assertions.assertThrows(InvalidRequestException.class, () -> accountService.updateAccountInfo(updateAccountRequest));
+        Assertions.assertThrows(DataNotFoundException.class, () -> accountService.updateAccountInfo(updateAccountRequest));
     }
 
 
@@ -148,9 +149,9 @@ public class AccountServiceImplTest {
         accountInfoResponse.setAccountId("uniqueId");
 
         Mockito.when(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).thenReturn(userDetails);
-        Mockito.when(accountRepository.findById(userDetails.getUserId())).thenThrow(new InvalidRequestException(Status.FAIL_USER_NOT_FOUND));
+        Mockito.when(accountRepository.findById(userDetails.getUserId())).thenThrow(new DataNotFoundException(Status.FAIL_USER_NOT_FOUND.label()));
 
-        Assertions.assertThrows(InvalidRequestException.class, () -> accountService.getMyInfo());
+        Assertions.assertThrows(DataNotFoundException.class, () -> accountService.getMyInfo());
 
     }
 }

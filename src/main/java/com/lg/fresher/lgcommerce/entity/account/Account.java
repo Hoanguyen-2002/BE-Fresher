@@ -35,6 +35,7 @@ public class Account extends BaseEntity {
     private String email;
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
     @ManyToOne(fetch = FetchType.EAGER)

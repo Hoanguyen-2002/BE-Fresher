@@ -81,9 +81,9 @@ public class WebSecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/v1/auth/logout", "/api/v1/auth/changePassword").authenticated()
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/products/**").permitAll()
-                        //.requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/v1/admin/**").permitAll()
+                        .requestMatchers("/api/v1/products/**", "/api/v1/categories/**").permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/v1/checkout/**").permitAll()
                         .requestMatchers("/api/v1/reviews/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session

@@ -27,6 +27,8 @@ import java.util.List;
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
  * 11/15/2024       63200485      first creation */
+
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -34,7 +36,8 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ReviewResponse {
 
-    //@JsonProperty("review_id")
+
+    @JsonProperty("review_id")
     private String reviewId;
     private String bookId;
     private String accountId;
@@ -43,7 +46,7 @@ public class ReviewResponse {
     private Integer rating;
     private String comment;
 
-    //    @JsonProperty("created_at")
+    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
 

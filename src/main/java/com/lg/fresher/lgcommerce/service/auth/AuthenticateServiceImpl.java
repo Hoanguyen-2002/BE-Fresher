@@ -6,6 +6,7 @@ import com.lg.fresher.lgcommerce.constant.AccountStatus;
 import com.lg.fresher.lgcommerce.constant.Status;
 import com.lg.fresher.lgcommerce.entity.account.Account;
 import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
+import com.lg.fresher.lgcommerce.exception.auth.AccountStatusException;
 import com.lg.fresher.lgcommerce.exception.auth.RefreshTokenException;
 import com.lg.fresher.lgcommerce.model.request.auth.*;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -116,9 +118,9 @@ public class AuthenticateServiceImpl implements AuthenService {
             throw new RefreshTokenException();
         }
         Account account = accountRepository.findUserByAccountId(userId).orElseThrow(
-                () -> new InvalidRequestException(Status.FAIL_USER_NOT_FOUND));
+                () -> new AccountStatusException(Status.FAIL_USER_NOT_FOUND));
         if (account.getStatus() == AccountStatus.BANNED) {
-            throw new InvalidRequestException(Status.FAIL_USER_IS_BANNED);
+            throw new AccountStatusException(Status.FAIL_USER_IS_BANNED);
         }
 
         UserDetailsImpl userDetails = UserDetailsImpl.build(account);
@@ -191,7 +193,7 @@ public class AuthenticateServiceImpl implements AuthenService {
                 .getAuthentication()
                 .getPrincipal();
         Account account = accountRepository.findUserByAccountId(userDetails.getUserId()).orElseThrow(
-                () -> new InvalidRequestException(Status.FAIL_USER_NOT_FOUND)
+                () -> new AccountStatusException(Status.FAIL_USER_NOT_FOUND)
         );
 
         if (!encoder.matches(changePasswordRequest.getOldPassword(), account.getPassword())) {
@@ -238,7 +240,13 @@ public class AuthenticateServiceImpl implements AuthenService {
      * @return String
      */
     private String generateNewPassword() {
-        return UUID.randomUUID().toString();
+        String specialCharacters = "!@#$%^&*";
+        Random random = new Random();
+        int index = random.nextInt(specialCharacters.length());
+        char randomSpecialCharacter = specialCharacters.charAt(index);
+
+        String newPass = UUID.randomUUID().toString() + randomSpecialCharacter;
+        return newPass.replace("-", "");
     }
 
     private void sendNewPassword(String email, String newPassword) {

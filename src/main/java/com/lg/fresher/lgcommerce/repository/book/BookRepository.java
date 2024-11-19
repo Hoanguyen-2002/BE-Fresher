@@ -34,7 +34,7 @@ public interface BookRepository extends BaseRepository<Book, String> {
     @Query(value = """
     WITH BOOK_MASTER AS (
     SELECT b.book_id, b.title, b.thumbnail, COALESCE(AVG(r.rating), 0) AS averageRating,
-          pr.base_price, pr.discount_price, p.name AS publisherName
+          pr.base_price, pr.discount_price, p.name AS publisherName, b.created_at, (pr.base_price - pr.discount_price) AS sellingPrice
     FROM book b
             LEFT JOIN price pr ON pr.book_id = b.book_id
             LEFT JOIN publisher p ON b.publisher_id = p.publisher_id
@@ -43,11 +43,10 @@ public interface BookRepository extends BaseRepository<Book, String> {
     AND (:publisher IS NULL OR p.publisher_id = :publisher)
     AND (:minPrice IS NULL OR pr.base_price >= :minPrice)
     AND (:maxPrice IS NULL OR pr.base_price <= :maxPrice)
-    AND b.status = 1
+    AND b.status = :status
     GROUP BY b.book_id, b.title, b.thumbnail,
-            pr.base_price, pr.discount_price, p.name
+            pr.base_price, pr.discount_price, p.name, b.created_at
     HAVING (:rating IS NULL OR FLOOR(COALESCE(AVG(r.rating), 0)) = :rating)
-    ORDER BY b.created_at DESC
     ), SALES_COUNT_MASTER AS (
         SELECT od.book_id, SUM(quantity) AS totalSalesCount
         FROM order_detail od
@@ -67,17 +66,18 @@ public interface BookRepository extends BaseRepository<Book, String> {
         WHERE (:authors IS NULL OR ba.author_id IN (:authors))
         GROUP BY ba.book_id
     )
-    SELECT bm.book_id, bm.title, bm.thumbnail, bm.base_price, bm.discount_price, bm.publisherName,
+    SELECT bm.book_id, bm.title, bm.thumbnail, bm.base_price, bm.discount_price, bm.publisherName, bm.sellingPrice,
            bm.averageRating, IFNULL(scm.totalSalesCount, 0) AS totalSalesCount, bam.authorName, bcm.categoryName
     FROM BOOK_MASTER bm
     LEFT JOIN SALES_COUNT_MASTER scm ON scm.book_id = bm.book_id
     INNER JOIN BOOK_AUTHOR_MASTER bam ON bam.book_id = bm.book_id
     INNER JOIN BOOK_CATEGORY_MASTER bcm ON bcm.book_id = bm.book_id
+    ORDER BY ?#{#pageable}
     """,
             countQuery = """
         WITH BOOK_MASTER AS (
         SELECT b.book_id, b.title, b.thumbnail, COALESCE(AVG(r.rating), 0) AS averageRating,
-              pr.base_price, pr.discount_price, p.name AS publisherName
+              pr.base_price, pr.discount_price, p.name AS publisherName, b.created_at
         FROM book b
                 LEFT JOIN price pr ON pr.book_id = b.book_id
                 LEFT JOIN publisher p ON b.publisher_id = p.publisher_id
@@ -86,10 +86,10 @@ public interface BookRepository extends BaseRepository<Book, String> {
         AND (:publisher IS NULL OR p.publisher_id = :publisher)
         AND (:minPrice IS NULL OR pr.base_price >= :minPrice)
         AND (:maxPrice IS NULL OR pr.base_price <= :maxPrice)
+        AND b.status = :status
         GROUP BY b.book_id, b.title, b.thumbnail,
-                pr.base_price, pr.discount_price, p.name
+                pr.base_price, pr.discount_price, p.name, b.created_at
         HAVING (:rating IS NULL OR FLOOR(COALESCE(AVG(r.rating), 0)) = :rating)
-        ORDER BY b.created_at DESC
         ), BOOK_CATEGORY_MASTER AS (
             SELECT DISTINCT bc.book_id
             FROM book_category bc
@@ -113,12 +113,13 @@ public interface BookRepository extends BaseRepository<Book, String> {
             @Param("maxPrice") Double maxPrice,
             @Param("authors") List<String> authors,
             @Param("categories") List<String> categories,
+            @Param("status") Boolean status,
             Pageable pageable
     );
 
     @Query(value = """    
     WITH BOOK_MASTER AS (
-    SELECT b.book_id, b.title, b.thumbnail, b.description, b.quantity,
+    SELECT b.book_id, b.title, b.thumbnail, b.description, b.quantity, b.status,
            COALESCE(AVG(r.rating), 0) AS averageRating,
            COALESCE(COUNT(r.review_id), 0) AS totalReviewCounts,
           pr.base_price, pr.discount_price, JSON_OBJECT(
@@ -131,7 +132,7 @@ public interface BookRepository extends BaseRepository<Book, String> {
     LEFT JOIN review r ON r.book_id = b.book_id
     WHERE b.book_id = :bookId
     AND b.status = TRUE
-    GROUP BY b.book_id, b.title, b.thumbnail, b.quantity,
+    GROUP BY b.book_id, b.title, b.thumbnail, b.quantity, b.status,
             pr.base_price, pr.discount_price, p.name, b.description
     ), SALES_COUNT_MASTER AS (
         SELECT od.book_id, SUM(quantity) AS totalSalesCount
@@ -181,7 +182,7 @@ public interface BookRepository extends BaseRepository<Book, String> {
         WHERE b.book_id = :bookId
         GROUP BY b.book_id
     )
-    SELECT bm.book_id, bm.title, bm.thumbnail, bm.base_price, bm.discount_price, bm.description, bm.quantity,
+    SELECT bm.book_id, bm.title, bm.thumbnail, bm.base_price, bm.discount_price, bm.description, bm.quantity, bm.status,
            bm.publisher, bm.totalReviewCounts,
            bm.averageRating, IFNULL(scm.totalSalesCount, 0) AS totalSalesCount,
            bam.book_author_json, bcm.book_category_json, 

@@ -41,6 +41,7 @@ spring:
       starttls:
        enable: true
 
+
   jpa:
     open-in-view: true
     hibernate:

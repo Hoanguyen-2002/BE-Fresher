@@ -4,13 +4,16 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.lg.fresher.lgcommerce.entity.account.Account;
 import com.lg.fresher.lgcommerce.entity.book.Book;
 import com.lg.fresher.lgcommerce.entity.core.BaseEntity;
+import com.lg.fresher.lgcommerce.utils.UUIDUtil;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
 
 import java.util.List;
 
+@SuperBuilder
 @Getter
 @Setter
 @Entity
@@ -19,7 +22,6 @@ import java.util.List;
         @Index(name = "account_id", columnList = "account_id")
 })
 @AllArgsConstructor
-@NoArgsConstructor
 @Builder
 public class Review extends BaseEntity {
     @Id
@@ -57,5 +59,9 @@ public class Review extends BaseEntity {
                 ", rating=" + rating +
                 ", comment='" + comment + '\'' +
                 '}';
+    }
+
+    public Review() {
+        this.reviewId = UUIDUtil.generateId();
     }
 }

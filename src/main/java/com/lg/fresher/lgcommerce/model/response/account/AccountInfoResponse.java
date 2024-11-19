@@ -35,7 +35,7 @@ public class AccountInfoResponse {
     private String avatar;
     private String email;
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-    private LocalDateTime jointDate;
+    private LocalDateTime joinDate;
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime updatedDate;
     private AccountStatus status;

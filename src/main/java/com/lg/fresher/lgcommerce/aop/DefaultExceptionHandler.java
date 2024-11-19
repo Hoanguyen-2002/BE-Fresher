@@ -1,8 +1,10 @@
 package com.lg.fresher.lgcommerce.aop;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.lg.fresher.lgcommerce.constant.Status;
 import com.lg.fresher.lgcommerce.exception.BusinessException;
 import com.lg.fresher.lgcommerce.exception.DuplicateDataException;
+import com.lg.fresher.lgcommerce.exception.auth.AccountStatusException;
 import com.lg.fresher.lgcommerce.exception.auth.RefreshTokenException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
 import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
@@ -16,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.util.Assert;
 import org.springframework.validation.BindException;
@@ -87,6 +90,32 @@ public class DefaultExceptionHandler {
                 Objects.requireNonNull(ex.getRequiredType()).getSimpleName());
         map.put("errors", errorMessage);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(map);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        Throwable cause = ex.getCause();
+        Map<String, String> errors = new HashMap<>();
+        // Kiểm tra nếu nguyên nhân gốc là InvalidFormatException
+        if (cause instanceof InvalidFormatException) {
+            InvalidFormatException invalidFormatException = (InvalidFormatException) cause;
+            invalidFormatException.getPath().forEach(reference -> {
+                String fieldName = reference.getFieldName();
+                Object invalidValue = invalidFormatException.getValue();
+                String expectedType = invalidFormatException.getTargetType().getSimpleName();
+                String errorMessage = String.format(
+                        "Invalid value '%s' for field '%s'. Expected type: %s",
+                        invalidValue,
+                        fieldName,
+                        expectedType
+                );
+                errors.put(fieldName, errorMessage);
+            });
+            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        }
+        // Nếu không phải InvalidFormatException, trả về lỗi chung
+        errors.put("error", "Malformed JSON request");
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(DataNotFoundException.class)
@@ -167,6 +196,9 @@ public class DefaultExceptionHandler {
         } else if (e.getCause() instanceof InvalidRequestException) {
             map = ((InvalidRequestException) e.getCause()).toMap();
             return new ResponseEntity<>(map, HttpStatus.BAD_REQUEST);
+        } else if (e.getCause() instanceof AccountStatusException) {
+            map = ((AccountStatusException) e.getCause()).toMap();
+            return new ResponseEntity<>(map, HttpStatus.UNAUTHORIZED);
         } else {
             map = buildGeneralErrorResponse(e, status);
         }
@@ -190,6 +222,20 @@ public class DefaultExceptionHandler {
             map = ((RefreshTokenException) e).toMap();
         } else if (e.getCause() instanceof RefreshTokenException) {
             map = ((RefreshTokenException) e.getCause()).toMap();
+        } else {
+            map = buildGeneralErrorResponse(e, status);
+        }
+        return new ResponseEntity<>(map, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(AccountStatusException.class)
+    public Object handleAccountStatusException(HttpServletRequest request, Exception e) {
+        HttpStatus status = getStatus(request);
+        Map<String, Object> map;
+        if (e instanceof AccountStatusException) {
+            map = ((AccountStatusException) e).toMap();
+        } else if (e.getCause() instanceof AccountStatusException) {
+            map = ((AccountStatusException) e.getCause()).toMap();
         } else {
             map = buildGeneralErrorResponse(e, status);
         }

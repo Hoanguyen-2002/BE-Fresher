@@ -39,10 +39,12 @@ public class CommonBookController {
                                              @RequestParam(name = "maxPrice", required = false) Double maxPrice,
                                              @RequestParam(name = "authors", required = false) List<String> authors,
                                              @RequestParam(name = "categories", required = false) List<String> categories,
+                                             @RequestParam(name = "sort", required = false) List<String> sort,
+                                             @RequestParam(name = "status", required = false, defaultValue = "true") Boolean status,
                                              @RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
                                              @RequestParam(name = "size", required = false, defaultValue = "20") Integer size) {
         return bookService.getAllBookListByClient(title, publisher,
-                rating, minPrice, maxPrice, authors, categories, page, size);
+                rating, minPrice, maxPrice, authors, categories, sort, status, page, size);
     }
 
     @GetMapping("/{id}")

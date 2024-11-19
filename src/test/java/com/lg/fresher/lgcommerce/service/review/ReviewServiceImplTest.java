@@ -27,6 +27,21 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+/**
+ *
+ -------------------------------------------------------------------------
+ * LG CNS Ecommerce
+ *------------------------------------------------------------------------
+ * @ Class Name : ReviewServiceImplTest
+ * @ Description : lg_ecommerce_be ReviewServiceImplTest
+ * @ author lg_ecommerce_be Dev Team 63200485
+ * @ since 11/19/2024
+ *------------------------------------------------------------------------
+ * Modification Information
+ *------------------------------------------------------------------------
+ * Date of Revision Modifier Revision
+ * ---------------  ---------   ------------------------------------------
+ * 11/19/2024       63200485      first creation */
 @ExtendWith(MockitoExtension.class)
 public class ReviewServiceImplTest {
     @Mock

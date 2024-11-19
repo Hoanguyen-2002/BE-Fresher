@@ -197,4 +197,20 @@ public class CategoryServiceImpl implements CategoryService {
         categoryResponse.setMetadata(metadata);
         return new CommonResponse<>(categoryResponse);
     }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public CommonResponse<Map<String, Object>> getListCategory() {
+        List<Category> categories = categoryRepository.findAll();
+        List<CategoryResponse> res = categories.stream()
+                .map(category -> CategoryResponse.builder()
+                        .categoryId(category.getCategoryId())
+                        .name(category.getName())
+                        .build())
+                .toList();
+        return CommonResponse.success(Map.of("content", res));
+    }
 }

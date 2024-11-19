@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class UpdateAddressRequest {
-    private String addresId;
+    private String addressId;
     @NotBlank(message = "Tỉnh/Thành phố không được để trống")
     @Size(min = 3, max = 30, message = "Tỉnh/Thành phố không hợp lệ")
     private String city;

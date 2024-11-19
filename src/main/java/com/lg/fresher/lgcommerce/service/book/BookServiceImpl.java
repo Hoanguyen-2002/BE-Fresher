@@ -1,11 +1,12 @@
 package com.lg.fresher.lgcommerce.service.book;
 
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
+import com.lg.fresher.lgcommerce.constant.Status;
 import com.lg.fresher.lgcommerce.entity.author.Author;
 import com.lg.fresher.lgcommerce.entity.book.*;
 import com.lg.fresher.lgcommerce.entity.category.Category;
 import com.lg.fresher.lgcommerce.entity.publisher.Publisher;
 import com.lg.fresher.lgcommerce.exception.DuplicateDataException;
+import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotNullException;
 import com.lg.fresher.lgcommerce.model.request.author.AuthorRequest;
@@ -34,11 +35,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -71,6 +72,7 @@ public class BookServiceImpl implements BookService {
     private final PropertyRepository propertyRepository;
     private final PriceRepository priceRepository;
     private final BookPropertyRepository bookPropertyRepository;
+    private final Set<String> VALID_SORT_COLUMNS = Set.of("title", "sellingPrice", "averageRating", "totalSalesCount");
 
 
     /**
@@ -88,10 +90,14 @@ public class BookServiceImpl implements BookService {
      */
     @Override
     public CommonResponse<Map<String, Object>> getAllBookListByClient(String title, String publisher, Integer rating, Double minPrice, Double maxPrice,
-                                                 List<String> authors, List<String> categories, Integer page, Integer size) {
-        Pageable pageable = PageRequest.of(page, size);
+                                                                      List<String> authors, List<String> categories, List<String> sort, Boolean status, Integer page, Integer size) {
 
-        Page<ClientBookCard> books = bookRepository.getBookCards(title, publisher, rating, minPrice, maxPrice, authors, categories, pageable);
+        //handle sort
+        Sort orders = getSort(sort);
+
+        Pageable pageable = PageRequest.of(page, size, orders);
+
+        Page<ClientBookCard> books = bookRepository.getBookCards(title, publisher, rating, minPrice, maxPrice, authors, categories, status, pageable);
 
         Map<String, Object> res = new HashMap<>();
         res.put("content", books.stream().map(clientBookCard -> BookCardResponse.builder()
@@ -111,6 +117,47 @@ public class BookServiceImpl implements BookService {
                                     "limit", page,
                                     "offset", size));
         return CommonResponse.success(res);
+    }
+
+    /**
+     *
+     * @ Description : lg_ecommerce_be BookServiceImpl Member Field getSort
+     *<pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/18/2024           63200504    first creation
+     *<pre>
+     * @param sort
+     * @return  Sort
+     */
+    private Sort getSort(List<String> sort) {
+
+        if (sort == null || sort.isEmpty()) {
+            return Sort.by(new Sort.Order(Sort.Direction.DESC, "created_at"));
+        }
+
+        return Sort.by(sort.stream()
+                .map(param -> {
+                    String[] parts = param.split("_");
+                    String column = parts[0].trim();
+                    String direction = "asc";
+
+                    if (parts.length == 2) {
+                        direction = parts[1].trim().toLowerCase();
+                    }
+
+                    if (!VALID_SORT_COLUMNS.contains(column) ||
+                            (!direction.equalsIgnoreCase("asc") && !direction.equalsIgnoreCase("desc"))) {
+                        throw new InvalidRequestException(Status.FAIL_SEARCH_INVALID_PARAM);
+                    }
+
+                    Sort.Direction sortDirection = direction.equalsIgnoreCase("desc")
+                            ? Sort.Direction.DESC
+                            : Sort.Direction.ASC;
+
+                    return new Sort.Order(sortDirection, column);
+                })
+                .toList());
     }
 
     /**
@@ -135,6 +182,7 @@ public class BookServiceImpl implements BookService {
                 .description(res.get("description").toString())
                 .quantity(Integer.parseInt(res.get("quantity").toString()))
                 .thumbnail(res.get("thumbnail").toString())
+                .status(Boolean.parseBoolean(res.get("status").toString()))
                 .publisher(res.get("publisher") == null ? null : jsonUtils.fromJson(res.get("publisher").toString(), PublisherResponse.class))
                 .images(res.get("book_image_json") == null ? null :
                         Arrays.stream((jsonUtils.fromJson(res.get("book_image_json").toString(), BookImageResponse[].class))).toList())
@@ -152,7 +200,7 @@ public class BookServiceImpl implements BookService {
                 .averageRating(Double.valueOf(res.get("averageRating").toString()))
                 .totalSalesCount(Integer.valueOf(res.get("totalSalesCount").toString()))
                 .build();
-        return CommonResponse.success(Map.of("content", bookRes));
+        return CommonResponse.success(Map.of("content", List.of(bookRes)));
     }
 
     /**
@@ -361,7 +409,7 @@ public class BookServiceImpl implements BookService {
     private void updatePriceFromBookRequest(PriceRequest priceRequest, Book refBook) {
         Price price = refBook.getPrice();
         price.setBasePrice(priceRequest.getBasePrice());
-        price.setDiscountPrice(priceRequest.getDiscountPrice());
+        price.setDiscountPrice(priceRequest.getDiscountPrice() == null ? 0 : priceRequest.getDiscountPrice());
         priceRepository.save(price);
     }
 
@@ -613,7 +661,7 @@ public class BookServiceImpl implements BookService {
     private void addPriceFromBookRequest(PriceRequest priceRequest, Book book) {
         priceRepository.save(Price.builder()
                 .priceId(UUID.randomUUID().toString()).basePrice(priceRequest.getBasePrice())
-                .discountPrice(priceRequest.getDiscountPrice()).book(book).build());
+                .discountPrice(priceRequest.getDiscountPrice() == null ? 0 : priceRequest.getDiscountPrice()).book(book).build());
     }
 
     /**

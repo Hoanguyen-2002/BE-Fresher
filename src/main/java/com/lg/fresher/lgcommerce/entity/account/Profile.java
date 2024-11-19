@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
@@ -44,5 +46,10 @@ public class Profile extends BaseEntity {
                 ", avatar='" + avatar + '\'' +
                 ", phone='" + phone + '\'' +
                 '}';
+    }
+
+    @PreUpdate
+    public void onPreUpdate(){
+        this.account.setUpdatedAt(LocalDateTime.now());
     }
 }

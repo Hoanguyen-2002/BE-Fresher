@@ -59,15 +59,16 @@ public interface AccountMapper {
     @Mapping(target = "phone", source = "profile.phone")
     @Mapping(target = "avatar", source = "profile.avatar")
     @Mapping(target = "listAddress", source = "address")
-    @Mapping(target = "jointDate", source = "createdAt")
+    @Mapping(target = "joinDate", source = "createdAt")
     @Mapping(target = "updatedDate", source = "updatedAt")
     @Mapping(target = "status", source = "status")
     AccountInfoResponse toAccountInfoResponse(Account account);
     @Mapping(target = "fullname", source = "profile.fullname")
     @Mapping(target = "avatar", source = "profile.avatar")
-    @Mapping(target = "jointDate", source = "createdAt")
+    @Mapping(target = "joinDate", source = "createdAt")
     @Mapping(target = "updatedDate", source = "updatedAt")
     @Mapping(target = "status", source = "status")
+    @Mapping(target = "phone", source = "profile.phone")
     SearchAccountResponse toSearchAccountResponse(Account account);
 
     /**

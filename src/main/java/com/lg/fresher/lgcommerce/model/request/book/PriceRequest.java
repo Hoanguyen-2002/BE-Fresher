@@ -36,7 +36,6 @@ public class PriceRequest {
     @Min(value = 0, message = "Giá bán cơ sở không được là số âm")
     private Double basePrice;
 
-    @NotNull(message = "Không được để trống giá giảm")
     @Min(value = 0, message = "Giá giảm không được là số âm")
     private Double discountPrice;
 }

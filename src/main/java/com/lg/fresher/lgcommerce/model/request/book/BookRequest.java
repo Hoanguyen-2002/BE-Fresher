@@ -17,6 +17,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
@@ -71,5 +72,6 @@ public class BookRequest {
     private List<@Valid PropertyRequest> properties;
 
     @NotNull(message = "Không được để trống giá sách")
-    private @Valid PriceRequest price;
+    @Valid
+    private PriceRequest price;
 }

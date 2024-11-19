@@ -5,6 +5,8 @@ import com.lg.fresher.lgcommerce.entity.core.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
@@ -46,5 +48,10 @@ public class Address extends BaseEntity {
                 ", district='" + district + '\'' +
                 ", detailAddress='" + detailAddress + '\'' +
                 '}';
+    }
+
+    @PreUpdate
+    public void onPreUpdate(){
+        this.account.setUpdatedAt(LocalDateTime.now());
     }
 }

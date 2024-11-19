@@ -53,7 +53,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
      */
     @Override
     public CommonResponse<Map<String, Object>> searchAccount(SearchAccountRequest searchAccountRequest) {
-        String keyword = searchAccountRequest.getKeyword();
+        String keyword = searchAccountRequest.getKeyword().trim();
         String sortRequest = searchAccountRequest.getSortRequest();
         String filterRequest = searchAccountRequest.getFilterRequest();
         int pageNo = searchAccountRequest.getPageNo();

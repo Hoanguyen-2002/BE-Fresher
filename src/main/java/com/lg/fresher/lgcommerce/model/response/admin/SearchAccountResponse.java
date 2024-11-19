@@ -31,8 +31,9 @@ public class SearchAccountResponse {
     private String username;
     private String email;
     private String avatar;
+    private String phone;
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-    private LocalDateTime jointDate;
+    private LocalDateTime joinDate;
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime updatedDate;
     private AccountStatus status;
