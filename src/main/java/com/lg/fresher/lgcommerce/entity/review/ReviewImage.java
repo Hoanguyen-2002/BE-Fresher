@@ -40,6 +40,10 @@ public class ReviewImage extends BaseEntity {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review_id", referencedColumnName = "review_id", nullable = false)
+    private Review review;
+
     @Override
     public String toString() {
         return "ReviewImage{" +

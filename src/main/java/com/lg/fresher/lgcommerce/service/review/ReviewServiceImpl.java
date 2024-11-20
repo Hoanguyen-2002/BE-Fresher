@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -173,5 +174,30 @@ public class ReviewServiceImpl implements ReviewService {
         data.put("content", responseDTO);
 
         return new CommonResponse<>(data);
+    }
+
+    @Override
+    @Transactional
+    public CommonResponse<String> deleteReviewByAccount(String reviewId, String accountId) {
+        Review review = reviewRepository.findByReviewIdAndAccountId(reviewId, accountId)
+                .orElseThrow(() -> new InvalidRequestException("Không tìm thấy review hoặc bạn không có quyền xóa review này."));
+
+        reviewRepository.delete(review); // Xóa cứng review
+
+        return CommonResponse.success("Xóa review thành công.");
+    }
+
+    @Override
+    @Transactional
+    public CommonResponse<String> softDeleteReview(String reviewId) {
+        Optional<Review> reviewOptional = reviewRepository.findById(reviewId);
+
+        if (reviewOptional.isEmpty()) {
+            throw new InvalidRequestException("Không tìm thấy review để xóa.");
+        }
+
+        reviewRepository.softDeleteByReviewId(reviewId);
+
+        return CommonResponse.success("Ẩn review thành công.");
     }
 }
