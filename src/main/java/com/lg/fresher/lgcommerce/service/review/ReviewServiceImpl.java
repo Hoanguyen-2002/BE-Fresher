@@ -123,10 +123,6 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public CommonResponse<Map<String, Object>> createReviewByOrderDetailId(String orderDetailId, ReviewRequest reviewRequest) {
 
-        if (reviewRequest.getImages() != null && reviewRequest.getImages().size() > 3) {
-            throw new InvalidRequestException("Không thể tải lên quá 3 ảnh!");
-        }
-
         OrderDetail orderDetail = orderDetailRepository.findCompletedAndNotReviewedOrderDetail(orderDetailId)
                 .orElseThrow(() -> new InvalidRequestException("Không thể đánh giá sản phẩm này! Đơn hàng chưa hoàn thành hoặc sản phẩm đã được đánh giá."));
 
@@ -157,6 +153,7 @@ public class ReviewServiceImpl implements ReviewService {
                     .collect(Collectors.toList());
 
             reviewImageRepository.saveAll(reviewImages);
+
             savedReview.setReviewImages(reviewImages);
         }
 
