@@ -6,6 +6,21 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+/**
+ *
+ -------------------------------------------------------------------------
+ * LG CNS Ecommerce
+ *------------------------------------------------------------------------
+ * @ Class Name : ReviewImage
+ * @ Description : lg_ecommerce_be ReviewImage
+ * @ author lg_ecommerce_be Dev Team 63200485
+ * @ since 11/20/2024
+ *------------------------------------------------------------------------
+ * Modification Information
+ *------------------------------------------------------------------------
+ * Date of Revision Modifier Revision
+ * ---------------  ---------   ------------------------------------------
+ * 11/20/2024       63200485      first creation */
 @Getter
 @Setter
 @Entity
@@ -20,11 +35,6 @@ public class ReviewImage extends BaseEntity {
     @Size(max = 50)
     @Column(name = "review_image_id", nullable = false, length = 50)
     private String reviewImageId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonBackReference
-    @JoinColumn(name = "review_id")
-    private Review review;
 
     @Size(max = 255)
     @Column(name = "image_url")

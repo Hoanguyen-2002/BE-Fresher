@@ -59,7 +59,7 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getReviewsByBookId(bookId, pageNo, pageSize));
     }
 
-    @PostMapping("/create")
+    @PostMapping("/orderDetail")
     public ResponseEntity<CommonResponse<Map<String, Object>>> createReviewByOrderDetailId(
             @RequestParam("orderDetailId") String orderDetailId,
             @Valid @RequestBody ReviewRequest reviewRequest) {

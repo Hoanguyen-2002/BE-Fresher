@@ -13,6 +13,21 @@ import org.hibernate.validator.constraints.Length;
 
 import java.util.List;
 
+/**
+ *
+ -------------------------------------------------------------------------
+ * LG CNS Ecommerce
+ *------------------------------------------------------------------------
+ * @ Class Name : Review
+ * @ Description : lg_ecommerce_be Review
+ * @ author lg_ecommerce_be Dev Team 63200485
+ * @ since 11/20/2024
+ *------------------------------------------------------------------------
+ * Modification Information
+ *------------------------------------------------------------------------
+ * Date of Revision Modifier Revision
+ * ---------------  ---------   ------------------------------------------
+ * 11/20/2024       63200485      first creation */
 @SuperBuilder
 @Getter
 @Setter
@@ -39,7 +54,7 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @OneToMany(mappedBy = "review")
+    @OneToMany(fetch = FetchType.LAZY)
     private List<ReviewImage> reviewImages;
 
     @Column(name = "rating")

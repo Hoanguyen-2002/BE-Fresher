@@ -148,7 +148,6 @@ public class ReviewServiceImpl implements ReviewService {
                     .map(imageUrl -> {
                         ReviewImage reviewImage = new ReviewImage();
                         reviewImage.setReviewImageId(UUIDUtil.generateId());
-                        reviewImage.setReview(savedReview);
                         reviewImage.setImageUrl(imageUrl.getImageUrl());
                         reviewImage.setCreatedBy(orderDetail.getOrder().getAccount().getAccountId());
                         reviewImage.setCreatedAt(LocalDateTime.now());

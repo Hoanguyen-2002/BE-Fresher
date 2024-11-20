@@ -10,6 +10,21 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ *
+ -------------------------------------------------------------------------
+ * LG CNS Ecommerce
+ *------------------------------------------------------------------------
+ * @ Class Name : ReviewResponseDTO
+ * @ Description : lg_ecommerce_be ReviewResponseDTO
+ * @ author lg_ecommerce_be Dev Team 63200485
+ * @ since 11/20/2024
+ *------------------------------------------------------------------------
+ * Modification Information
+ *------------------------------------------------------------------------
+ * Date of Revision Modifier Revision
+ * ---------------  ---------   ------------------------------------------
+ * 11/20/2024       63200485      first creation */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
