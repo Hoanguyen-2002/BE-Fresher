@@ -61,7 +61,12 @@ public enum Status {
     UPDATE_ACCOUNT_FAIL_ADDRESS_NOT_FOUND(120101, "Không tìm thấy địa chỉ cập nhật"),
     UPDATE_ACCOUNT_FAIL_CHANGE_PASSWORD_NOT_MATCH(120102, "Mật khẩu không chính xác"),
 
-    LOGOUT_SUCCESS(13000, "Đăng xuất thành công");
+    LOGOUT_SUCCESS(13000, "Đăng xuất thành công"),
+
+    CHECKOUT_SUCCESS(14000, "Thông tin đơn hàng hợp lệ"),
+    CHECKOUT_FAIL_PRODUCT_HAVE_CHANGED(14100, "Sản phẩm đã cập nhật, vui lòng tải lại trang"),
+    CHECKOUT_FAIL_PRICE_PRODUCT_HAVE_CHANGED(14101, "Giá sản phẩm đã được cập nhật lại")
+    ;
 
     private final int code;
     private final String label;

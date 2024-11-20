@@ -43,5 +43,5 @@ public interface ReviewMapper {
     @Mapping(target = "rating", source = "review.rating")
     @Mapping(target = "isReviewed", source = "orderDetail.isReviewed")
     @Mapping(target = "images", source = "review.reviewImages")
-    ReviewResponseDTO toReviewResponse(String orderId, String orderDetailId, Review review, OrderDetail orderDetail);
+    ReviewResponseDTO toReviewResponseDTO(String orderId, String orderDetailId, Review review, OrderDetail orderDetail);
 }

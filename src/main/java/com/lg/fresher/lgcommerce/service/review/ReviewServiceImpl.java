@@ -11,6 +11,7 @@ import com.lg.fresher.lgcommerce.model.response.common.MetaData;
 import com.lg.fresher.lgcommerce.model.response.review.ReviewResponse;
 import com.lg.fresher.lgcommerce.model.response.review.ReviewResponseDTO;
 import com.lg.fresher.lgcommerce.repository.order.OrderDetailRepository;
+import com.lg.fresher.lgcommerce.repository.review.ReviewImageRepository;
 import com.lg.fresher.lgcommerce.repository.review.ReviewRepository;
 import com.lg.fresher.lgcommerce.utils.UUIDUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final ReviewImageRepository reviewImageRepository;
     private final ReviewMapper reviewMapper;
 
     /**
@@ -66,9 +68,10 @@ public class ReviewServiceImpl implements ReviewService {
      * 11/19/2024          63200485    first creation
      *<pre>     */
     @Autowired
-    public ReviewServiceImpl(ReviewRepository reviewRepository, OrderDetailRepository orderDetailRepository, ReviewMapper reviewMapper) {
+    public ReviewServiceImpl(ReviewRepository reviewRepository, OrderDetailRepository orderDetailRepository, ReviewImageRepository reviewImageRepository, ReviewMapper reviewMapper) {
         this.reviewRepository = reviewRepository;
         this.orderDetailRepository = orderDetailRepository;
+        this.reviewImageRepository = reviewImageRepository;
         this.reviewMapper = reviewMapper;
     }
 
@@ -120,6 +123,10 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public CommonResponse<Map<String, Object>> createReviewByOrderDetailId(String orderDetailId, ReviewRequest reviewRequest) {
 
+        if (reviewRequest.getImages() != null && reviewRequest.getImages().size() > 3) {
+            throw new InvalidRequestException("Không thể tải lên quá 3 ảnh!");
+        }
+
         OrderDetail orderDetail = orderDetailRepository.findCompletedAndNotReviewedOrderDetail(orderDetailId)
                 .orElseThrow(() -> new InvalidRequestException("Không thể đánh giá sản phẩm này! Đơn hàng chưa hoàn thành hoặc sản phẩm đã được đánh giá."));
 
@@ -149,6 +156,7 @@ public class ReviewServiceImpl implements ReviewService {
                     })
                     .collect(Collectors.toList());
 
+            reviewImageRepository.saveAll(reviewImages);
             savedReview.setReviewImages(reviewImages);
         }
 
@@ -156,7 +164,7 @@ public class ReviewServiceImpl implements ReviewService {
         orderDetail.setIsReviewed(true);
         orderDetailRepository.save(orderDetail);
 
-        ReviewResponseDTO responseDTO = reviewMapper.toReviewResponse(
+        ReviewResponseDTO responseDTO = reviewMapper.toReviewResponseDTO(
                 orderDetail.getOrder().getOrderId(),
                 orderDetailId,
                 savedReview,

@@ -27,10 +27,13 @@ import com.lg.fresher.lgcommerce.model.response.property.PropertyResponse;
 import com.lg.fresher.lgcommerce.model.response.publisher.PublisherResponse;
 import com.lg.fresher.lgcommerce.repository.author.AuthorRepository;
 import com.lg.fresher.lgcommerce.repository.book.*;
+import com.lg.fresher.lgcommerce.repository.book.custom.BookCard;
+import com.lg.fresher.lgcommerce.repository.book.custom.BookCustomRepository;
 import com.lg.fresher.lgcommerce.repository.category.CategoryRepository;
 import com.lg.fresher.lgcommerce.repository.publisher.PublisherRepository;
 import com.lg.fresher.lgcommerce.model.response.book.itf.ClientBookCard;
 import com.lg.fresher.lgcommerce.utils.JsonUtils;
+import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -62,6 +65,7 @@ import java.util.stream.Collectors;
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
+    private final BookCustomRepository bookCustomRepository;
     private final JsonUtils jsonUtils;
     private final PublisherRepository publisherRepository;
     private final BookImageRepository bookImageRepository;
@@ -97,25 +101,13 @@ public class BookServiceImpl implements BookService {
 
         Pageable pageable = PageRequest.of(page, size, orders);
 
-        Page<ClientBookCard> books = bookRepository.getBookCards(title, publisher, rating, minPrice, maxPrice, authors, categories, status, pageable);
-
+        Map<String, Object> resources = bookCustomRepository.getBookCard(title, publisher, rating, minPrice, maxPrice, authors, categories, status, pageable);
+        List<BookCard> books = (List<BookCard>) resources.get("data");
         Map<String, Object> res = new HashMap<>();
-        res.put("content", books.stream().map(clientBookCard -> BookCardResponse.builder()
-                        .bookId(clientBookCard.getBookId())
-                        .title(clientBookCard.getTitle())
-                        .thumbnail(clientBookCard.getThumbnail())
-                        .authorName(clientBookCard.getAuthorName())
-                        .categoryName(clientBookCard.getCategoryName())
-                        .publisherName(clientBookCard.getPublisherName())
-                        .averageRating(clientBookCard.getAverageRating())
-                        .basePrice(clientBookCard.getBasePrice())
-                        .discountPrice(clientBookCard.getDiscountPrice())
-                        .totalSalesCount(clientBookCard.getTotalSalesCount())
-                        .build())
-                .toList());
-        res.put("metaData", Map.of("totalElements", books.getTotalElements(),
-                                    "limit", page,
-                                    "offset", size));
+        res.put("content", books.stream().map(BookCardResponse::from).toList());
+        res.put("metaData", Map.of("totalElements", (Long) resources.get("total"),
+                                    "limit", size,
+                                    "offset", page));
         return CommonResponse.success(res);
     }
 

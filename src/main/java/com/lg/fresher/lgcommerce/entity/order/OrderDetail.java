@@ -34,34 +34,39 @@ public class OrderDetail extends BaseEntity {
     @JoinColumn(name = "book_id")
     private Book book;
 
-    @Min(value = 0, message = "Quantity must be a positive number")
+    @Min(value = 0, message = "Số lượng đặt phải là một số nguyên dương")
     @Column(name = "quantity")
     private Integer quantity;
 
-    @Min(value = 0, message = "Base price must be a positive real number")
+    @Min(value = 0, message = "Giá gốc phải lớn hơn 0")
     @Column(name = "base_price")
     private Double basePrice;
 
-    @Min(value = 0, message = "Base price must be a positive real number")
+    @Min(value = 0, message = "Giá giảm phải lớn hơn hoặc bằng 0")
     @Column(name = "discount_price")
     private Double discountPrice;
 
-    @Min(value = 0, message = "Final price must be a positive real number")
+    @Min(value = 0, message = "Giá cuối cùng phải lớn hơn 0")
     @Column(name = "final_price")
     private Double finalPrice;
 
     @Column(name = "is_reviewed")
     private Boolean isReviewed;
 
+    private Double total;
+
     @Override
     public String toString() {
         return "OrderDetail{" +
                 "orderDetailId='" + orderDetailId + '\'' +
+                ", order=" + order +
+                ", book=" + book +
                 ", quantity=" + quantity +
                 ", basePrice=" + basePrice +
                 ", discountPrice=" + discountPrice +
                 ", finalPrice=" + finalPrice +
                 ", isReviewed=" + isReviewed +
+                ", total=" + total +
                 '}';
     }
 }

@@ -27,7 +27,7 @@ import org.springframework.stereotype.Repository;
  * 11/19/2024       63200485      first creation */
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, String> {
-    @Query(value = "SELECT r FROM Review r JOIN r.book b WHERE b.bookId = :bookId")
+    @Query(value = "SELECT r FROM Review r JOIN r.book b WHERE b.bookId = :bookId ORDER BY r.createdAt DESC")
     Page<Review> findAllReviewsByBookId(@Param("bookId") String bookId, Pageable pageable);
 
     @Query(value = "SELECT COUNT(r.review_id) FROM review r WHERE r.book_id = :bookId", nativeQuery = true)

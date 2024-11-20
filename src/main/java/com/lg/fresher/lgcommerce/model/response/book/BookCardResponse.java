@@ -1,5 +1,6 @@
 package com.lg.fresher.lgcommerce.model.response.book;
 
+import com.lg.fresher.lgcommerce.repository.book.custom.BookCard;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,4 +36,19 @@ public class BookCardResponse {
     private String categoryName;
     private String publisherName;
     private Integer totalSalesCount;
+
+    public static BookCardResponse from(BookCard param) {
+        return BookCardResponse.builder()
+                .bookId(param.getBookId())
+                .title(param.getTitle())
+                .thumbnail(param.getThumbnail())
+                .authorName(param.getAuthorName())
+                .categoryName(param.getCategoryName())
+                .publisherName(param.getPublisherName())
+                .averageRating(param.getAverageRating())
+                .basePrice(param.getBasePrice())
+                .discountPrice(param.getDiscountPrice())
+                .totalSalesCount(param.getTotalSalesCount())
+                .build();
+    }
 }

@@ -1,7 +1,7 @@
 package com.lg.fresher.lgcommerce.mapping.checkout;
 
 import com.lg.fresher.lgcommerce.entity.order.ShippingMethod;
-import com.lg.fresher.lgcommerce.model.response.order.ShippingMethodResponse;
+import com.lg.fresher.lgcommerce.model.response.checkout.ShippingMethodResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

@@ -72,7 +72,6 @@ public interface BookRepository extends BaseRepository<Book, String> {
     LEFT JOIN SALES_COUNT_MASTER scm ON scm.book_id = bm.book_id
     INNER JOIN BOOK_AUTHOR_MASTER bam ON bam.book_id = bm.book_id
     INNER JOIN BOOK_CATEGORY_MASTER bcm ON bcm.book_id = bm.book_id
-    ORDER BY ?#{#pageable}
     """,
             countQuery = """
         WITH BOOK_MASTER AS (
@@ -114,7 +113,7 @@ public interface BookRepository extends BaseRepository<Book, String> {
             @Param("authors") List<String> authors,
             @Param("categories") List<String> categories,
             @Param("status") Boolean status,
-            Pageable pageable
+            @Param("pageable") Pageable pageable
     );
 
     @Query(value = """    
