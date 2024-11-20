@@ -4,6 +4,7 @@ import com.lg.fresher.lgcommerce.model.request.review.ReviewRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.review.ReviewResponseDTO;
 import com.lg.fresher.lgcommerce.service.review.ReviewService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -61,7 +62,7 @@ public class ReviewController {
     @PostMapping("/create")
     public ResponseEntity<CommonResponse<Map<String, Object>>> createReviewByOrderDetailId(
             @RequestParam("orderDetailId") String orderDetailId,
-            @RequestBody ReviewRequest reviewRequest) {
+            @Valid @RequestBody ReviewRequest reviewRequest) {
         return ResponseEntity.ok( reviewService.createReviewByOrderDetailId(orderDetailId, reviewRequest));
     }
 

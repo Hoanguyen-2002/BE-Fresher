@@ -84,7 +84,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/v1/products/**", "/api/v1/categories/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/api/v1/checkout/**").permitAll()
-                        .requestMatchers("/api/v1/reviews/**").permitAll()
+                        .requestMatchers("/api/v1/reviews/book/**").permitAll()
+                        .requestMatchers("/api/v1/reviews/create/**").hasAuthority("USER")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

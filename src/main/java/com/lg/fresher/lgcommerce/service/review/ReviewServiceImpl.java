@@ -160,7 +160,6 @@ public class ReviewServiceImpl implements ReviewService {
             savedReview.setReviewImages(reviewImages);
         }
 
-
         orderDetail.setIsReviewed(true);
         orderDetailRepository.save(orderDetail);
 
