@@ -5,15 +5,19 @@ import com.lg.fresher.lgcommerce.constant.OrderStatus;
 import com.lg.fresher.lgcommerce.constant.Status;
 import com.lg.fresher.lgcommerce.entity.account.Account;
 import com.lg.fresher.lgcommerce.entity.order.Order;
+import com.lg.fresher.lgcommerce.entity.order.OrderDetail;
 import com.lg.fresher.lgcommerce.entity.order.PaymentMethod;
 import com.lg.fresher.lgcommerce.entity.order.ShippingMethod;
 import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
+import com.lg.fresher.lgcommerce.mapping.order.OrderDetailMapper;
 import com.lg.fresher.lgcommerce.model.request.order.ConfirmOrderRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
+import com.lg.fresher.lgcommerce.model.response.checkout.CheckoutItemResponse;
 import com.lg.fresher.lgcommerce.model.response.order.ConfirmOrderResponse;
 import com.lg.fresher.lgcommerce.repository.checkout.PaymentMethodRepository;
 import com.lg.fresher.lgcommerce.repository.checkout.ShippingMethodRepository;
+import com.lg.fresher.lgcommerce.repository.order.OrderDetailRepository;
 import com.lg.fresher.lgcommerce.repository.order.OrderRepository;
 import com.lg.fresher.lgcommerce.service.email.EmailService;
 import jakarta.mail.MessagingException;
@@ -25,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,6 +47,7 @@ import java.util.Map;
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
  * 11/20/2024       63200502      add confirm order method
+ * 11/21/2024       63200502      add get order detail
  */
 @Service
 @RequiredArgsConstructor
@@ -50,7 +56,9 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final ShippingMethodRepository shippingMethodRepository;
     private final PaymentMethodRepository paymentMethodRepository;
+    private final OrderDetailRepository orderDetailRepository;
     private final EmailService emailService;
+    private final OrderDetailMapper orderDetailMapper;
 
     /**
      * @param confirmOrderRequest
@@ -97,6 +105,19 @@ public class OrderServiceImpl implements OrderService {
         Map<String, Object> response = new HashMap<>();
         response.put("content", confirmOrderResponse);
 
+        return CommonResponse.success(response);
+    }
+
+    /**
+     * @param orderId
+     * @return
+     */
+    @Override
+    public CommonResponse<Map<String, Object>> getOrderDetail(String orderId) {
+        List<CheckoutItemResponse> orderDetailList = orderDetailRepository.getAllOrderDetailByOrderId(orderId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", orderDetailList);
         return CommonResponse.success(response);
     }
 

@@ -11,7 +11,6 @@ import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.common.MetaData;
 import com.lg.fresher.lgcommerce.model.response.review.ReviewResponse;
 import com.lg.fresher.lgcommerce.model.response.review.ReviewResponseDTO;
-import com.lg.fresher.lgcommerce.model.response.review.ReviewsAdminResponse;
 import com.lg.fresher.lgcommerce.repository.order.OrderDetailRepository;
 import com.lg.fresher.lgcommerce.repository.review.ReviewImageRepository;
 import com.lg.fresher.lgcommerce.repository.review.ReviewRepository;
@@ -174,21 +173,6 @@ public class ReviewServiceImpl implements ReviewService {
         Map<String, Object> data = new HashMap<>();
         data.put("content", responseDTO);
 
-        return new CommonResponse<>(data);
-    }
-
-    @Override
-    public CommonResponse<Map<String, Object>> getAllReviews(int pageNo, int pageSize) {
-        pageNo = Math.max(0, pageNo - 1);
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
-        Page<Review> reviews = reviewRepository.findAllReviewsWithOrderDetails(pageable);
-        List<ReviewsAdminResponse> reviewResponses = reviews.stream()
-                .map(reviewMapper::toReviewsAdminResponse)
-                .collect(Collectors.toList());
-        MetaData metaData = new MetaData(reviews.getTotalElements(), pageNo + 1, pageSize);
-        Map<String, Object> data = new HashMap<>();
-        data.put("content", reviewResponses);
-        data.put("metadata", metaData);
         return new CommonResponse<>(data);
     }
 }

@@ -1,11 +1,9 @@
 package com.lg.fresher.lgcommerce.mapping.review;
 
-import com.lg.fresher.lgcommerce.entity.book.Book;
 import com.lg.fresher.lgcommerce.entity.order.OrderDetail;
 import com.lg.fresher.lgcommerce.entity.review.Review;
 import com.lg.fresher.lgcommerce.model.response.review.ReviewResponse;
 import com.lg.fresher.lgcommerce.model.response.review.ReviewResponseDTO;
-import com.lg.fresher.lgcommerce.model.response.review.ReviewsAdminResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.stereotype.Component;
@@ -46,21 +44,4 @@ public interface ReviewMapper {
     @Mapping(target = "isReviewed", source = "orderDetail.isReviewed")
     @Mapping(target = "images", source = "review.reviewImages")
     ReviewResponseDTO toReviewResponseDTO(String orderId, String orderDetailId, Review review, OrderDetail orderDetail);
-
-    @Mapping(source = "review.reviewId", target = "reviewId")
-    @Mapping(source = "review.comment", target = "comment")
-    @Mapping(source = "review.rating", target = "rating")
-    @Mapping(source = "review.account.accountId", target = "createdBy")
-    @Mapping(source = "review.account.username", target = "username")
-    @Mapping(source = "review.createdAt", target = "createdAt")
-    @Mapping(source = "review.book.bookId", target = "bookId")
-    @Mapping(expression = "java(getOrderIdFromBook(review.getBook()))", target = "orderId")
-    @Mapping(source = "review.reviewImages", target = "images")
-    ReviewsAdminResponse toReviewsAdminResponse(Review review);
-    default String getOrderIdFromBook(Book book) {
-        if (book.getOrderDetails() != null && !book.getOrderDetails().isEmpty()) {
-            return book.getOrderDetails().get(0).getOrder().getOrderId();
-        }
-        return null;
-    }
 }

@@ -2,22 +2,26 @@ package com.lg.fresher.lgcommerce.service.order;
 
 import com.lg.fresher.lgcommerce.config.security.UserDetailsImpl;
 import com.lg.fresher.lgcommerce.constant.OrderStatus;
+import com.lg.fresher.lgcommerce.entity.book.Book;
 import com.lg.fresher.lgcommerce.entity.order.Order;
+import com.lg.fresher.lgcommerce.entity.order.OrderDetail;
 import com.lg.fresher.lgcommerce.entity.order.PaymentMethod;
 import com.lg.fresher.lgcommerce.entity.order.ShippingMethod;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
+import com.lg.fresher.lgcommerce.mapping.order.OrderDetailMapper;
 import com.lg.fresher.lgcommerce.model.request.order.ConfirmOrderRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
+import com.lg.fresher.lgcommerce.model.response.checkout.CheckoutItemResponse;
 import com.lg.fresher.lgcommerce.model.response.order.ConfirmOrderResponse;
 import com.lg.fresher.lgcommerce.repository.checkout.PaymentMethodRepository;
 import com.lg.fresher.lgcommerce.repository.checkout.ShippingMethodRepository;
 import com.lg.fresher.lgcommerce.repository.order.OrderRepository;
 import com.lg.fresher.lgcommerce.service.email.EmailService;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -25,6 +29,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -47,6 +52,9 @@ public class OrderServiceImplTest {
     private SecurityContext securityContext;
     @Mock
     private EmailService emailService;
+
+    @Mock
+    private OrderDetailMapper orderDetailMapper;
     @InjectMocks
     private OrderServiceImpl orderService;
     private ConfirmOrderRequest confirmOrderRequest;
@@ -102,7 +110,7 @@ public class OrderServiceImplTest {
     }
 
     @Test
-    void test_confirm_order_failed_order_not_found(){
+    void test_confirm_order_failed_order_not_found() {
         when(orderRepository.findById(anyString())).thenReturn(Optional.empty());
 
         assertThrows(DataNotFoundException.class, () -> {
@@ -110,4 +118,35 @@ public class OrderServiceImplTest {
         });
     }
 
+    @Test
+    void test_get_order_detail_item_success() {
+        String orderId = "orderId";
+        OrderDetail orderDetail = new OrderDetail();
+        Book book = new Book();
+        book.setTitle("bookTitle");
+        book.setThumbnail("thumbnail");
+
+        orderDetail.setBook(book);
+        orderDetail.setOrderDetailId("orderDetailId");
+        orderDetail.setBasePrice(100.0);
+        orderDetail.setDiscountPrice(0.0);
+        orderDetail.setQuantity(2);
+        orderDetail.setTotal(200.0);
+
+        Order newOrder = new Order();
+        newOrder.setOrderDetails(List.of(orderDetail));
+        Mockito.when(orderRepository.findById(anyString())).thenReturn(Optional.of(newOrder));
+
+        CommonResponse<Map<String, Object>> actualResponse = orderService.getOrderDetail(orderId);
+
+        List<CheckoutItemResponse> itemResponses = (List<CheckoutItemResponse>) actualResponse.getData().get("content");
+        assertNotNull(itemResponses);
+    }
+
+    @Test
+    void test_get_order_detail_item_fail_order_not_existed() {
+        when(orderRepository.findById(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(DataNotFoundException.class, () -> orderService.getOrderDetail(anyString()));
+    }
 }

@@ -27,6 +27,7 @@ import java.util.Map;
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
  * 11/20/2024       63200502      api confirm order
+ * 11/21/2024       63200502      api get order detail
  */
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -45,6 +46,17 @@ public class OrderController {
     })
     public CommonResponse<Map<String, Object>> confirmOrder(@RequestBody @Valid ConfirmOrderRequest confirmOrderRequest) {
         return orderService.confirmOrder(confirmOrderRequest);
+    }
+
+    @GetMapping("/{id}/itemDetail")
+    @Operation(summary = "Lấy thông tin chi tiết các mặt hàng của order", description = "Người dùng lấy ra thông tin chi tiết " +
+            "bao gồm giá gốc, giá giảm và tổng giá của từng sản phẩm đang đặt")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "0", description = "Lấy thông tin thành công"),
+            @ApiResponse(responseCode = "404", description = "Lấy thông tin không thành công, đơn hàng không tồn tại"),
+    })
+    public CommonResponse<Map<String, Object>> getOrderDetail(@PathVariable String id) {
+        return orderService.getOrderDetail(id);
     }
 
 }

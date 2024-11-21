@@ -371,8 +371,7 @@ public class BookServiceImpl implements BookService {
     private void updateAuthorFromBookRequest(List<AuthorRequest> authorRequests, Book refBook){
         //collect origin authors
         Map<String, BookAuthor> originalAuthors = refBook.getAuthorBooks()
-                .stream().collect(Collectors.toMap(bookAuthor -> bookAuthor.getAuthor().getAuthorId().toLowerCase(), bookAuthor -> bookAuthor));
-
+                .stream().collect(Collectors.toMap(BookAuthor::getBookAuthorId, bookAuthor -> bookAuthor));
         //Collect new author and deleted author
         Map<String, AuthorRequest> newAuthorRequest = new HashMap<>();
         authorRequests.forEach((authorRequest) -> {

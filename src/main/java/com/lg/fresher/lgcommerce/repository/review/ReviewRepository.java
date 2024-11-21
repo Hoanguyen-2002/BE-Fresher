@@ -32,14 +32,4 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
 
     @Query(value = "SELECT COUNT(r.review_id) FROM review r WHERE r.book_id = :bookId", nativeQuery = true)
     long countReviewsByBookId(@Param("bookId") String bookId);
-
-    @Query("""
-   SELECT DISTINCT r FROM Review r
-   JOIN r.account a
-   JOIN r.book b
-   LEFT JOIN b.orderDetails od
-   LEFT JOIN od.order o
-   LEFT JOIN r.reviewImages ri
-   """)
-    Page<Review> findAllReviewsWithOrderDetails(Pageable pageable);
 }

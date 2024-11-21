@@ -98,24 +98,4 @@ public class Order extends BaseEntity {
 
     @Column(name = "is_guest_checkout")
     private Boolean isGuestCheckout;
-
-    @Override
-    public String toString() {
-        return "Order{" +
-                "orderId='" + orderId + '\'' +
-                ", account=" + account +
-                ", shippingMethod=" + shippingMethod +
-                ", paymentMethod=" + paymentMethod +
-                ", orderStatus=" + orderStatus +
-                ", orderDetails=" + orderDetails +
-                ", totalAmount=" + totalAmount +
-                ", recipient='" + recipient + '\'' +
-                ", email='" + email + '\'' +
-                ", phone='" + phone + '\'' +
-                ", shippingFee=" + shippingFee +
-                ", detailAddress='" + detailAddress + '\'' +
-                ", isDeleted=" + isDeleted +
-                ", isGuestCheckout=" + isGuestCheckout +
-                '}';
-    }
 }

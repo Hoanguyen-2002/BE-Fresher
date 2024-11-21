@@ -66,13 +66,5 @@ public class ReviewController {
         return ResponseEntity.ok( reviewService.createReviewByOrderDetailId(orderDetailId, reviewRequest));
     }
 
-    @GetMapping("/admin")
-    public ResponseEntity<CommonResponse<Map<String, Object>>> getAllReviews(
-            @RequestParam(value = "page", defaultValue = "1") int pageNo,
-            @RequestParam(value = "size", defaultValue = "10") int pageSize) {
-        CommonResponse<Map<String, Object>> response = reviewService.getAllReviews(pageNo, pageSize);
-        return ResponseEntity.ok(response);
-    }
-
 
 }

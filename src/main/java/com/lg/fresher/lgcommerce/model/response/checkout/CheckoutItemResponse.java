@@ -1,5 +1,6 @@
 package com.lg.fresher.lgcommerce.model.response.checkout;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,6 +21,7 @@ import lombok.NoArgsConstructor;
  * 11/18/2024       63200502      first creation */
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class CheckoutItemResponse {
     private String id;
     private String title;
@@ -31,7 +33,7 @@ public class CheckoutItemResponse {
     private String note;
 
     /**
-     * 
+     *
      * @ Description : lg_ecommerce_be CheckoutItemResponse constructor
      *<pre>
      * Date of Revision Modifier Revision
@@ -54,5 +56,39 @@ public class CheckoutItemResponse {
         this.imageURL = imageURL;
         this.originalPrice = originalPrice;
         this.salePrice = salePrice;
+    }
+
+    /**
+     *
+     * @ Description : lg_ecommerce_be CheckoutItemResponse constructor
+     *<pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/21/2024         63200502    first creation
+     *<pre>
+
+     field:
+
+     * @ Description : lg_ecommerce_be CheckoutItemResponse Member Field
+     *<pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/21/2024          63200502    first creation
+     *<pre>
+     */
+    public CheckoutItemResponse(String id,
+                                String title,
+                                String imageURL,
+                                int quantity,
+                                double originalPrice,
+                                double salePrice,
+                                double totalPrice) {
+        this.id = id;
+        this.title = title;
+        this.imageURL = imageURL;
+        this.quantity = quantity;
+        this.originalPrice = originalPrice;
+        this.salePrice = salePrice;
+        this.totalPrice = totalPrice;
     }
 }
