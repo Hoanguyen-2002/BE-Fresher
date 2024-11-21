@@ -65,8 +65,20 @@ public enum Status {
 
     CHECKOUT_SUCCESS(14000, "Thông tin đơn hàng hợp lệ"),
     CHECKOUT_FAIL_PRODUCT_HAVE_CHANGED(14100, "Sản phẩm đã cập nhật, vui lòng tải lại trang"),
-    CHECKOUT_FAIL_PRICE_PRODUCT_HAVE_CHANGED(14101, "Giá sản phẩm đã được cập nhật lại")
+    CHECKOUT_FAIL_PRICE_PRODUCT_HAVE_CHANGED(14101, "Giá sản phẩm đã được cập nhật lại"),
+
+    ORDER_SUCCESS(15000, "Đặt hàng thành công"),
+    ORDER_FAIL_ORDER_NOT_FOUND(15100, "Không tìm thấy đơn hàng, vui lòng đặt lại"),
+    ORDER_FAIL_SHIPPING_METHOD_NOT_FOUND(15101, "Phương thức giao hàng không tồn tại, vui lòng thử lại"),
+    ORDER_FAIL_PAYMENT_METHOD_NOT_FOUND(15102, "Phương thức thanh toán không tồn tại, vui lòng thử lại"),
+    ORDER_FAIL_ORDER_HAVE_PLACED(15103, "Đơn hàng đang được xử lý, không thể cập nhật thông tin đơn hàng"),
+
+
+    REVIEW_SUCCESS(16000,"Review sản phẩm thành công"),
+    REVIEW_FAIL_ORDER_NOT_COMPLETE_OR_IS_REVIEWED(16100,"Không thể đánh giá sản phẩm này! Đơn hàng chưa hoàn thành hoặc sản phẩm đã được đánh giá."),
+    REVIEW_IMAGES_FAIL_UPLOADED(16200,"Không thể tải lên quá 3 ảnh")
     ;
+
 
     private final int code;
     private final String label;

@@ -2,9 +2,6 @@ package com.lg.fresher.lgcommerce.repository.review;
 
 import com.lg.fresher.lgcommerce.entity.review.ReviewImage;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -24,7 +21,4 @@ import org.springframework.stereotype.Repository;
  * 11/20/2024       63200485      first creation */
 @Repository
 public interface ReviewImageRepository  extends JpaRepository<ReviewImage,String> {
-    @Modifying
-    @Query("DELETE FROM ReviewImage ri WHERE ri.review.reviewId = :reviewId")
-    void deleteByReviewId(@Param("reviewId") String reviewId);
 }

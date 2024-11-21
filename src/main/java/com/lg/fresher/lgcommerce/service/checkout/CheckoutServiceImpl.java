@@ -53,6 +53,7 @@ public class CheckoutServiceImpl implements CheckoutService {
     @Transactional
     public CommonResponse<Map<String, Object>> captureOrder(CheckoutRequest checkoutRequest) {
         boolean isOrderValid = true;
+        double totalPrice = 0.0;
         List<String> bookIds = checkoutRequest.getItemList().stream()
                 .map(CheckoutItemRequest::getBookId)
                 .toList();
@@ -72,6 +73,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                     item.getOriginalPrice(),
                     item.getSalePrice(),
                     requestItem.getQuantity()));
+            totalPrice += item.getTotalPrice();
             if (item.getOriginalPrice() != requestItem.getOriginalPrice() || item.getSalePrice() != requestItem.getSalePrice()) {
                 item.setNote(Status.CHECKOUT_FAIL_PRICE_PRODUCT_HAVE_CHANGED.label());
                 isOrderValid = false;
@@ -88,26 +90,26 @@ public class CheckoutServiceImpl implements CheckoutService {
                     Status.CHECKOUT_FAIL_PRODUCT_HAVE_CHANGED.code(),
                     response);
         }
-        res.setOrderId(generateDaftOrder(items));
+        res.setOrderId(generateDaftOrder(items, totalPrice));
         response.put("content", res);
         return CommonResponse.success(response);
     }
 
     /**
-     *
      * @ Description : lg_ecommerce_be CheckoutServiceImpl Member Field generateDaftOrder
-     *<pre>
+     * <pre>
      * Date of Revision Modifier Revision
      * ---------------  ---------   -----------------------------------------------
      * 11/19/2024           63200502    first creation
-     *<pre>
+     * <pre>
      * @param itemResponseList
-     * @return  String
+     * @return String
      */
-    private String generateDaftOrder(List<CheckoutItemResponse> itemResponseList) {
+    private String generateDaftOrder(List<CheckoutItemResponse> itemResponseList, double totalPrice) {
         Order order = Order.builder()
                 .orderId(UUIDUtil.generateId())
                 .orderStatus(OrderStatus.DAFT)
+                .totalAmount(totalPrice)
                 .build();
         orderRepository.save(order);
         generateOrderDetail(order, itemResponseList);
@@ -115,13 +117,12 @@ public class CheckoutServiceImpl implements CheckoutService {
     }
 
     /**
-     *
      * @ Description : lg_ecommerce_be CheckoutServiceImpl Member Field generateOrderDetail
-     *<pre>
+     * <pre>
      * Date of Revision Modifier Revision
      * ---------------  ---------   -----------------------------------------------
      * 11/19/2024           63200502    first creation
-     *<pre>
+     * <pre>
      * @param order
      * @param itemResponseList
      */
@@ -145,17 +146,16 @@ public class CheckoutServiceImpl implements CheckoutService {
     }
 
     /**
-     *
      * @ Description : lg_ecommerce_be CheckoutServiceImpl Member Field calculateTotalPrice
-     *<pre>
+     * <pre>
      * Date of Revision Modifier Revision
      * ---------------  ---------   -----------------------------------------------
      * 11/19/2024           63200502    first creation
-     *<pre>
+     * <pre>
      * @param basePrice
      * @param discountPrice
      * @param quantity
-     * @return  Double
+     * @return Double
      */
     private Double calculateTotalPrice(double basePrice, double discountPrice, int quantity) {
         return (basePrice - discountPrice) * quantity;

@@ -28,6 +28,8 @@ import com.lg.fresher.lgcommerce.model.response.property.PropertyResponse;
 import com.lg.fresher.lgcommerce.model.response.publisher.PublisherResponse;
 import com.lg.fresher.lgcommerce.repository.author.AuthorRepository;
 import com.lg.fresher.lgcommerce.repository.book.*;
+import com.lg.fresher.lgcommerce.repository.book.custom.BookCard;
+import com.lg.fresher.lgcommerce.repository.book.custom.BookCustomRepository;
 import com.lg.fresher.lgcommerce.repository.category.CategoryRepository;
 import com.lg.fresher.lgcommerce.repository.publisher.PublisherRepository;
 import com.lg.fresher.lgcommerce.utils.JsonUtils;
@@ -49,6 +51,9 @@ public class BookServiceImplTest {
 
     @Mock
     private BookRepository bookRepository;
+
+    @Mock
+    private BookCustomRepository bookCustomRepository;
 
     @Mock
     private PublisherRepository publisherRepository;
@@ -104,7 +109,7 @@ public class BookServiceImplTest {
         Integer page = 0;
         Integer size = 10;
 
-        ClientBookCard mockBook1 = mock(ClientBookCard.class);
+        BookCard mockBook1 = mock(BookCard.class);
         when(mockBook1.getBookId()).thenReturn("1");
         when(mockBook1.getTitle()).thenReturn("Test Book 1");
         when(mockBook1.getThumbnail()).thenReturn("thumbnail1.png");
@@ -116,7 +121,7 @@ public class BookServiceImplTest {
         when(mockBook1.getDiscountPrice()).thenReturn(100.0);
         when(mockBook1.getTotalSalesCount()).thenReturn(200);
 
-        ClientBookCard mockBook2 = mock(ClientBookCard.class);
+        BookCard mockBook2 = mock(BookCard.class);
         when(mockBook2.getBookId()).thenReturn("2");
         when(mockBook2.getTitle()).thenReturn("Test Book 2");
         when(mockBook2.getThumbnail()).thenReturn("thumbnail2.png");
@@ -128,11 +133,11 @@ public class BookServiceImplTest {
         when(mockBook2.getDiscountPrice()).thenReturn(150.0);
         when(mockBook2.getTotalSalesCount()).thenReturn(300);
 
-        List<ClientBookCard> mockBooks = List.of(mockBook1, mockBook2);
-        Page<ClientBookCard> mockPage = new PageImpl<>(mockBooks, PageRequest.of(page, size), mockBooks.size());
+        List<BookCard> mockBooks = List.of(mockBook1, mockBook2);
+
 
         // Mock repository
-        when(bookRepository.getBookCards(
+        when(bookCustomRepository.getBookCard(
                 eq(title),
                 eq(publisher),
                 eq(rating),

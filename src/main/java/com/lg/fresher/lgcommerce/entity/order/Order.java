@@ -14,20 +14,21 @@ import org.hibernate.validator.constraints.Length;
 import java.util.List;
 
 /**
- *
- -------------------------------------------------------------------------
+ * -------------------------------------------------------------------------
  * LG CNS Ecommerce
- *------------------------------------------------------------------------
+ * ------------------------------------------------------------------------
+ *
  * @ Class Name : Order
  * @ Description : lg_ecommerce_be Order
  * @ author lg_ecommerce_be Dev Team 63200502
  * @ since 11/19/2024
- *------------------------------------------------------------------------
+ * ------------------------------------------------------------------------
  * Modification Information
- *------------------------------------------------------------------------
+ * ------------------------------------------------------------------------
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
- * 11/19/2024       63200502      first creation */
+ * 11/19/2024       63200502      first creation
+ */
 @Getter
 @Setter
 @Entity
@@ -64,7 +65,7 @@ public class Order extends BaseEntity {
     @Column(name = "order_status")
     private OrderStatus orderStatus;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<OrderDetail> orderDetails;
 
@@ -95,17 +96,26 @@ public class Order extends BaseEntity {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
+    @Column(name = "is_guest_checkout")
+    private Boolean isGuestCheckout;
+
     @Override
     public String toString() {
         return "Order{" +
                 "orderId='" + orderId + '\'' +
-                ", total=" + totalAmount +
+                ", account=" + account +
+                ", shippingMethod=" + shippingMethod +
+                ", paymentMethod=" + paymentMethod +
+                ", orderStatus=" + orderStatus +
+                ", orderDetails=" + orderDetails +
+                ", totalAmount=" + totalAmount +
                 ", recipient='" + recipient + '\'' +
                 ", email='" + email + '\'' +
                 ", phone='" + phone + '\'' +
                 ", shippingFee=" + shippingFee +
                 ", detailAddress='" + detailAddress + '\'' +
                 ", isDeleted=" + isDeleted +
+                ", isGuestCheckout=" + isGuestCheckout +
                 '}';
     }
 }

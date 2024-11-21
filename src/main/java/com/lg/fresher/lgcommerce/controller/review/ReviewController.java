@@ -66,19 +66,5 @@ public class ReviewController {
         return ResponseEntity.ok( reviewService.createReviewByOrderDetailId(orderDetailId, reviewRequest));
     }
 
-    @DeleteMapping("/user/{reviewId}")
-    public ResponseEntity<CommonResponse<String>> deleteReviewByAccount(
-            @PathVariable String reviewId,
-            @RequestHeader("Account-Id") String accountId) {
-        CommonResponse<String> response = reviewService.deleteReviewByAccount(reviewId, accountId);
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/admin/{reviewId}")
-    public ResponseEntity<CommonResponse<String>> softDeleteReview(@PathVariable String reviewId) {
-        CommonResponse<String> response = reviewService.softDeleteReview(reviewId);
-        return ResponseEntity.ok(response);
-    }
-
 
 }

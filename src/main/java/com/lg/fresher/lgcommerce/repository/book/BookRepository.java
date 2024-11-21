@@ -190,8 +190,8 @@ public interface BookRepository extends BaseRepository<Book, String> {
     LEFT JOIN SALES_COUNT_MASTER scm ON scm.book_id = bm.book_id
     INNER JOIN BOOK_AUTHOR_MASTER bam ON bam.book_id = bm.book_id
     INNER JOIN BOOK_CATEGORY_MASTER bcm ON bcm.book_id = bm.book_id
-    INNER JOIN BOOK_IMAGES bi ON bi.book_id = bm.book_id
-    INNER JOIN BOOK_PROPERTY bp ON bp.book_id = bm.book_id
+    LEFT JOIN BOOK_IMAGES bi ON bi.book_id = bm.book_id
+    LEFT JOIN BOOK_PROPERTY bp ON bp.book_id = bm.book_id
     """, nativeQuery = true)
     Optional<Map<String, Object>> findBookDetailById(@Param("bookId") String bookId);
 

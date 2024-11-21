@@ -24,6 +24,4 @@ import java.util.Map;
 public interface ReviewService {
     CommonResponse<Map<String, Object>> getReviewsByBookId(String bookId, int pageNo, int pageSize);
     CommonResponse<Map<String, Object>> createReviewByOrderDetailId(String orderDetailId , ReviewRequest reviewRequest);
-    CommonResponse<String> deleteReviewByAccount(String reviewId, String accountId);
-    CommonResponse<String> softDeleteReview(String reviewId);
 }

@@ -257,31 +257,4 @@ public class ReviewServiceImplTest {
         assertEquals(3, savedReview.getReviewImages().size());
     }
 
-    @Test
-    void deleteReviewByAccount_shouldThrowExceptionWhenReviewNotFound() {
-        String reviewId = UUIDUtil.generateId();
-        String accountId = UUIDUtil.generateId();
-
-        when(reviewRepository.findByReviewIdAndAccountId(reviewId, accountId))
-                .thenReturn(Optional.empty());
-
-        InvalidRequestException exception = assertThrows(InvalidRequestException.class, () -> {
-            reviewServiceImpl.deleteReviewByAccount(reviewId, accountId);
-        });
-
-        assertEquals("Không tìm thấy review hoặc bạn không có quyền xóa review này.", exception.getMessage());
-    }
-
-    @Test
-    void softDeleteReview_shouldThrowExceptionWhenReviewNotFound() {
-        String reviewId = UUIDUtil.generateId();
-
-        when(reviewRepository.findById(reviewId)).thenReturn(Optional.empty());
-
-        InvalidRequestException exception = assertThrows(InvalidRequestException.class, () -> {
-            reviewServiceImpl.softDeleteReview(reviewId);
-        });
-
-        assertEquals("Không tìm thấy review để xóa.", exception.getMessage());
-    }
 }

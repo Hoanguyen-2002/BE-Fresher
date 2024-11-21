@@ -1,5 +1,6 @@
 package com.lg.fresher.lgcommerce.service.review;
 
+import com.lg.fresher.lgcommerce.constant.Status;
 import com.lg.fresher.lgcommerce.entity.order.OrderDetail;
 import com.lg.fresher.lgcommerce.entity.review.Review;
 import com.lg.fresher.lgcommerce.entity.review.ReviewImage;
@@ -25,7 +26,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -125,11 +125,11 @@ public class ReviewServiceImpl implements ReviewService {
     public CommonResponse<Map<String, Object>> createReviewByOrderDetailId(String orderDetailId, ReviewRequest reviewRequest) {
 
         if (reviewRequest.getImages() != null && reviewRequest.getImages().size() > 3) {
-            throw new InvalidRequestException("Không thể tải lên quá 3 ảnh!");
+            throw new InvalidRequestException(Status.REVIEW_IMAGES_FAIL_UPLOADED);
         }
 
         OrderDetail orderDetail = orderDetailRepository.findCompletedAndNotReviewedOrderDetail(orderDetailId)
-                .orElseThrow(() -> new InvalidRequestException("Không thể đánh giá sản phẩm này! Đơn hàng chưa hoàn thành hoặc sản phẩm đã được đánh giá."));
+                .orElseThrow(() -> new InvalidRequestException(Status.REVIEW_FAIL_ORDER_NOT_COMPLETE_OR_IS_REVIEWED));
 
 
         Review review = new Review();
@@ -174,30 +174,5 @@ public class ReviewServiceImpl implements ReviewService {
         data.put("content", responseDTO);
 
         return new CommonResponse<>(data);
-    }
-
-    @Override
-    @Transactional
-    public CommonResponse<String> deleteReviewByAccount(String reviewId, String accountId) {
-        Review review = reviewRepository.findByReviewIdAndAccountId(reviewId, accountId)
-                .orElseThrow(() -> new InvalidRequestException("Không tìm thấy review hoặc bạn không có quyền xóa review này."));
-
-        reviewRepository.delete(review); // Xóa cứng review
-
-        return CommonResponse.success("Xóa review thành công.");
-    }
-
-    @Override
-    @Transactional
-    public CommonResponse<String> softDeleteReview(String reviewId) {
-        Optional<Review> reviewOptional = reviewRepository.findById(reviewId);
-
-        if (reviewOptional.isEmpty()) {
-            throw new InvalidRequestException("Không tìm thấy review để xóa.");
-        }
-
-        reviewRepository.softDeleteByReviewId(reviewId);
-
-        return CommonResponse.success("Ẩn review thành công.");
     }
 }
