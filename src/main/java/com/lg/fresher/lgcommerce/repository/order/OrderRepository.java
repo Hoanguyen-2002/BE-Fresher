@@ -2,6 +2,7 @@ package com.lg.fresher.lgcommerce.repository.order;
 
 import com.lg.fresher.lgcommerce.entity.order.Order;
 import com.lg.fresher.lgcommerce.repository.BaseRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -21,5 +22,5 @@ import org.springframework.stereotype.Repository;
  * 11/19/2024       63200502      first creation
  */
 @Repository
-public interface OrderRepository extends BaseRepository<Order, String> {
+public interface OrderRepository extends BaseRepository<Order, String>, JpaSpecificationExecutor<Order> {
 }
