@@ -53,7 +53,12 @@ public class OrderDetail extends BaseEntity {
     @Column(name = "is_reviewed")
     private Boolean isReviewed;
 
+    @Min(value = 0, message = "Tổng giá tiền không thể âm")
+    @Column(name = "total")
     private Double total;
+
+    @Column(name = "note", length = 150)
+    private String note;
 
     @Override
     public String toString() {
@@ -67,6 +72,7 @@ public class OrderDetail extends BaseEntity {
                 ", finalPrice=" + finalPrice +
                 ", isReviewed=" + isReviewed +
                 ", total=" + total +
+                ", note='" + note + '\'' +
                 '}';
     }
 }

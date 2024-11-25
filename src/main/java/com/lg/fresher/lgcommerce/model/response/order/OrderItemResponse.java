@@ -27,5 +27,8 @@ public class OrderItemResponse {
     private double basePrice;
     private double discountPrice;
     private double finalPrice;
+    private double totalPrice;
     private int quantity;
+    private Boolean isReviewed;
+    private String note;
 }

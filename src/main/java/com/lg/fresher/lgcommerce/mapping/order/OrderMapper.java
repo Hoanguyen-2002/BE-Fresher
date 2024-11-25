@@ -28,5 +28,6 @@ public interface OrderMapper {
     @Mapping(target = "paymentMethod", source = "paymentMethod.paymentName")
     @Mapping(target = "address", source = "detailAddress")
     @Mapping(target = "lastUpdated", source = "updatedAt")
+    @Mapping(target = "total", source = "totalAmount")
     GetListOrderResponse toGetListOrderResponse(Order order);
 }

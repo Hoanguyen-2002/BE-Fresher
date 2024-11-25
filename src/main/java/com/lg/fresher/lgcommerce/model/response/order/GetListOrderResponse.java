@@ -1,5 +1,6 @@
 package com.lg.fresher.lgcommerce.model.response.order;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -34,7 +35,9 @@ public class GetListOrderResponse {
     private double shippingFee;
     private String paymentMethod;
     private double total;
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime lastUpdated;
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime createdAt;
     private String email;
     private String note;

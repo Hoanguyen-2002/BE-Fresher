@@ -74,7 +74,7 @@ public class SearchUtil {
     public List<Sort.Order> appendOrderSort(String sortRequest, Set<String> validSortFields) {
         List<Sort.Order> orders = new ArrayList<>();
         if (sortRequest == null || sortRequest.isEmpty()) {
-            orders.add(new Sort.Order(Sort.Direction.ASC, "createdAt"));
+            orders.add(new Sort.Order(Sort.Direction.ASC, "updatedAt"));
             return orders;
         }
 

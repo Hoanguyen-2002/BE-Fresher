@@ -59,4 +59,15 @@ public class OrderController {
         return orderService.getOrderDetail(id);
     }
 
+    @GetMapping("/tracking/{id}")
+//    @Operation(summary = "Lấy thông tin chi tiết các mặt hàng của order", description = "Người dùng lấy ra thông tin chi tiết " +
+//            "bao gồm giá gốc, giá giảm và tổng giá của từng sản phẩm đang đặt")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "0", description = "Lấy thông tin thành công"),
+//            @ApiResponse(responseCode = "404", description = "Lấy thông tin không thành công, đơn hàng không tồn tại"),
+//    })
+    public CommonResponse<Map<String, Object>> getTrackOrderDetail(@PathVariable String id) {
+        return orderService.getOrderDetail(id);
+    }
+
 }
