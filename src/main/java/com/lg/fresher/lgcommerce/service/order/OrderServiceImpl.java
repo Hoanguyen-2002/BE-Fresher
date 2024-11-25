@@ -9,10 +9,12 @@ import com.lg.fresher.lgcommerce.entity.order.PaymentMethod;
 import com.lg.fresher.lgcommerce.entity.order.ShippingMethod;
 import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
+import com.lg.fresher.lgcommerce.mapping.order.OrderMapper;
 import com.lg.fresher.lgcommerce.model.request.order.ConfirmOrderRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.checkout.CheckoutItemResponse;
 import com.lg.fresher.lgcommerce.model.response.order.ConfirmOrderResponse;
+import com.lg.fresher.lgcommerce.model.response.order.GetListOrderResponse;
 import com.lg.fresher.lgcommerce.repository.checkout.PaymentMethodRepository;
 import com.lg.fresher.lgcommerce.repository.checkout.ShippingMethodRepository;
 import com.lg.fresher.lgcommerce.repository.order.OrderDetailRepository;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +60,7 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentMethodRepository paymentMethodRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final EmailService emailService;
+    private final OrderMapper orderMapper;
 
     /**
      * @param confirmOrderRequest
@@ -70,7 +74,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(confirmOrderRequest.getOrderId()).orElseThrow(() ->
                 new DataNotFoundException(Status.ORDER_FAIL_ORDER_NOT_FOUND.label()));
 
-        if (order.getOrderStatus() != OrderStatus.DAFT) {
+        if (order.getOrderStatus() != OrderStatus.DRAFT) {
             throw new InvalidRequestException(Status.ORDER_FAIL_ORDER_HAVE_PLACED);
         }
 
@@ -92,6 +96,7 @@ public class OrderServiceImpl implements OrderService {
             order.setIsGuestCheckout(true);
         }
         order.setOrderStatus(OrderStatus.PENDING);
+        order.setCreatedAt(LocalDateTime.now());
         sendNotifyOrder(order.getOrderId());
 
         ConfirmOrderResponse confirmOrderResponse = new ConfirmOrderResponse();
@@ -114,6 +119,20 @@ public class OrderServiceImpl implements OrderService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("content", orderDetailList);
+        return CommonResponse.success(response);
+    }
+
+    /**
+     *
+     * @param orderId
+     * @return
+     */
+    @Override
+    public CommonResponse<Map<String, Object>> getTrackOrderDetail(String orderId) {
+        Order order = orderRepository.findByOrderId(orderId).orElseThrow(() -> new DataNotFoundException(Status.ORDER_FIND_NOT_FOUND.label()));
+        GetListOrderResponse orderResponse = orderMapper.toGetListOrderResponse(order);
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", orderResponse);
         return CommonResponse.success(response);
     }
 

@@ -72,11 +72,17 @@ public enum Status {
     ORDER_FAIL_SHIPPING_METHOD_NOT_FOUND(15101, "Phương thức giao hàng không tồn tại, vui lòng thử lại"),
     ORDER_FAIL_PAYMENT_METHOD_NOT_FOUND(15102, "Phương thức thanh toán không tồn tại, vui lòng thử lại"),
     ORDER_FAIL_ORDER_HAVE_PLACED(15103, "Đơn hàng đang được xử lý, không thể cập nhật thông tin đơn hàng"),
-
+    ORDER_FIND_NOT_FOUND(15104, "Không tìm thấy đơn hàng , vui lòng kiểm tra mã vận đơn"),
 
     REVIEW_SUCCESS(16000,"Review sản phẩm thành công"),
     REVIEW_FAIL_ORDER_NOT_COMPLETE_OR_IS_REVIEWED(16100,"Không thể đánh giá sản phẩm này! Đơn hàng chưa hoàn thành hoặc sản phẩm đã được đánh giá."),
-    REVIEW_IMAGES_FAIL_UPLOADED(16200,"Không thể tải lên quá 3 ảnh")
+    REVIEW_IMAGES_FAIL_UPLOADED(16200,"Không thể tải lên quá 3 ảnh"),
+
+    ACCEPT_ORDER_SUCCESS(17000, "Xác nhận đơn hàng thành công"),
+    ACCEPT_ORDER_FAIL_ITEM_OUT_OF_STOCK(17100, "Xử lý đơn hàng thất bại, số lượng trong kho không đủ"),
+    ACCEPT_ORDER_FAIL_ORDER_STATUS_HAVE_CHANGED(17101, "Trạng thái đơn hàng đã bị thay đổi, vui lòng tải lại trang"),
+    ACCEPT_ORDER_FAIL_ORDER_NOT_FOUND(17102, "Không tìm thấy đơn hàng, vui lòng thử lại"),
+    ACCEPT_ORDER_FAIL_DETAIL_ITEM_OUT_OF_STOCK(17103, "Số lượng trong kho không đủ"),
     ;
 
 

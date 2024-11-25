@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class OrderItemResponse {
+    private String orderDetailId;
     private String bookId;
     private String name;
     private String thumbnail;

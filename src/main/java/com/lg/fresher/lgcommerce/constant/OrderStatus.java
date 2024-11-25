@@ -14,9 +14,11 @@ package com.lg.fresher.lgcommerce.constant;
  *------------------------------------------------------------------------
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
- * 11/19/2024       63200502      first creation */
+ * 11/19/2024       63200502      first creation
+ * 11/25/2024       63200502      fix spelling error
+ * */
 public enum OrderStatus {
-    DAFT(0),
+    DRAFT(0),
     PENDING(1),
     CANCEL(2),
     PROCESSING(3),

@@ -2,6 +2,7 @@ package com.lg.fresher.lgcommerce.controller.admin.order;
 
 import com.lg.fresher.lgcommerce.model.request.order.SearchOrderRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
+import com.lg.fresher.lgcommerce.model.response.StringResponse;
 import com.lg.fresher.lgcommerce.service.admin.order.AdminOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -43,5 +44,17 @@ public class AdminOrderController {
     })
     public CommonResponse<Map<String, Object>> searchOrder(@Valid @RequestBody SearchOrderRequest searchOrderRequest) {
         return orderService.getListOrder(searchOrderRequest);
+    }
+
+    @PostMapping("/{orderId}")
+    @Operation(summary = "Chấp nhận đơn hàng", description = "Nhân viên quản lý xác nhận đơn hàng của người dùng")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "0", description = "Xác nhận đơn thành công"),
+            @ApiResponse(responseCode = "17100", description = "Xử lý đơn hàng thất bại, số lượng trong kho không đủ"),
+            @ApiResponse(responseCode = "17101", description = "Trạng thái đơn hàng đã bị thay đổi, vui lòng tải lại trang"),
+            @ApiResponse(responseCode = "17102", description = "Không tìm thấy đơn hàng, vui lòng thử lại")
+    })
+    public CommonResponse<StringResponse> acceptOrder(@PathVariable String orderId) {
+        return orderService.acceptOrder(orderId);
     }
 }

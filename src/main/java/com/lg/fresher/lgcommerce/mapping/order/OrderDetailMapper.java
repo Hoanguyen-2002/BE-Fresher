@@ -59,5 +59,6 @@ public interface OrderDetailMapper {
     @Mapping(target = "name", source = "book.title")
     @Mapping(target = "thumbnail", source = "book.thumbnail")
     @Mapping(target = "totalPrice", source = "total")
+    @Mapping(target = "orderDetailId", source = "orderDetailId")
     OrderItemResponse toOrderItemResponse(OrderDetail orderDetail);
 }

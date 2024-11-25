@@ -150,6 +150,7 @@ public class ReviewServiceImpl implements ReviewService {
                         ReviewImage reviewImage = new ReviewImage();
                         reviewImage.setReviewImageId(UUIDUtil.generateId());
                         reviewImage.setImageUrl(imageUrl.getImageUrl());
+                        reviewImage.setReview(savedReview);
                         reviewImage.setCreatedBy(orderDetail.getOrder().getAccount().getAccountId());
                         reviewImage.setCreatedAt(LocalDateTime.now());
                         return reviewImage;

@@ -98,4 +98,7 @@ public class Order extends BaseEntity {
 
     @Column(name = "is_guest_checkout")
     private Boolean isGuestCheckout;
+
+    @Column(name = "note", length = 150)
+    private String note;
 }

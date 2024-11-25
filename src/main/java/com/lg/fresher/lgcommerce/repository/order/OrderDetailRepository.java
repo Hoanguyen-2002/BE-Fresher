@@ -2,8 +2,10 @@ package com.lg.fresher.lgcommerce.repository.order;
 
 import com.lg.fresher.lgcommerce.entity.order.OrderDetail;
 import com.lg.fresher.lgcommerce.model.response.checkout.CheckoutItemResponse;
+import com.lg.fresher.lgcommerce.model.response.order.OrderDetailChecking;
 import com.lg.fresher.lgcommerce.model.response.order.OrderDetailItem;
 import com.lg.fresher.lgcommerce.repository.BaseRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -61,17 +63,47 @@ public interface OrderDetailRepository extends BaseRepository<OrderDetail, Strin
     @Query("""
             SELECT new com.lg.fresher.lgcommerce.model.response.order.OrderDetailItem(
                 o.orderId,
+                od.orderDetailId,
                 o.email,
                 b.thumbnail,
                 b.title,
                 od.quantity,
                 od.finalPrice,
                 od.total,
-                o.totalAmount)
+                o.totalAmount,
+                b.bookId,
+                b.quantity,
+                o.orderStatus)
             FROM OrderDetail od
             JOIN od.book b
             JOIN od.order o
             WHERE o.orderId = :orderId
             """)
     List<OrderDetailItem> getOrderDetailItemByOrderId(@Param("orderId") String orderId);
+
+    /**
+     * @ Description : lg_ecommerce_be OrderDetailRepository Member Field appendMessage
+     * <pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/23/2024           63200502    first creation
+     * <pre>
+     * @param orderDetailIds
+     * @param message
+     */
+    @Modifying
+    @Query(value = """
+            UPDATE OrderDetail od
+            SET od.note = :message
+            WHERE od.orderDetailId IN (:orderDetailIds)
+            """)
+    void appendMessage(@Param("orderDetailIds") List<String> orderDetailIds, @Param("message") String message);
+
+    @Modifying
+    @Query(value = """
+            UPDATE OrderDetail od
+            SET od.note = ""
+            WHERE od.order.orderId = :orderId
+            """)
+    void removeErrorMessage(@Param("orderId") String orderId);
 }

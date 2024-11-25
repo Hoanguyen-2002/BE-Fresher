@@ -1,5 +1,6 @@
 package com.lg.fresher.lgcommerce.model.response.order;
 
+import com.lg.fresher.lgcommerce.constant.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OrderDetailItem {
     private String orderId;
+    private String orderDetailId;
     private String orderEmail;
     private String imageURL;
     private String title;
@@ -32,4 +34,7 @@ public class OrderDetailItem {
     private double finalPrice;
     private Double total;
     private Double totalAmount;
+    private String bookId;
+    private int stockQuantity;
+    private OrderStatus orderStatus;
 }

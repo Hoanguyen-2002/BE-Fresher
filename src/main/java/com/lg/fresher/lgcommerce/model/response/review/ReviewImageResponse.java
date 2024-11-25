@@ -32,6 +32,5 @@ public class ReviewImageResponse extends BaseResponse {
     @JsonProperty("review_image_id")
     private String reviewImageId;
 
-    @JsonProperty("image_url")
     private String imageUrl;
 }

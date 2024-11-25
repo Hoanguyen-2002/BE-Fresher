@@ -46,7 +46,7 @@ public class OrderSpecification {
     public static Specification<Order> filterByOrderStatus(String status) {
         return (root, query, criteriaBuilder) -> {
             if (status == null || status.isEmpty()) {
-                return criteriaBuilder.notEqual(root.get("orderStatus"), OrderStatus.DAFT);
+                return criteriaBuilder.notEqual(root.get("orderStatus"), OrderStatus.DRAFT);
             }
             return criteriaBuilder.equal(root.get("orderStatus"), status);
         };

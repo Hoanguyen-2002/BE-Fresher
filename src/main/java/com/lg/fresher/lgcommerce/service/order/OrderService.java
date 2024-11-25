@@ -46,4 +46,17 @@ public interface OrderService {
      * @return  CommonResponse<Map<String, Object>>
      */
     CommonResponse<Map<String, Object>> getOrderDetail(String orderId);
+
+    /**
+     *
+     * @ Description : lg_ecommerce_be OrderService Member Field getTrackOrderDetail
+     *<pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/25/2024           63200485    first creation
+     *<pre>
+     * @param orderId
+     * @return  CommonResponse<Map<String, Object>>
+     */
+    CommonResponse<Map<String, Object>> getTrackOrderDetail(String orderId);
 }

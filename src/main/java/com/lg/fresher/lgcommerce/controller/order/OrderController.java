@@ -28,6 +28,7 @@ import java.util.Map;
  * ---------------  ---------   ------------------------------------------
  * 11/20/2024       63200502      api confirm order
  * 11/21/2024       63200502      api get order detail
+ * 11/25/2024       63200485      api tracking order
  */
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -60,14 +61,17 @@ public class OrderController {
     }
 
     @GetMapping("/tracking/{id}")
-//    @Operation(summary = "Lấy thông tin chi tiết các mặt hàng của order", description = "Người dùng lấy ra thông tin chi tiết " +
-//            "bao gồm giá gốc, giá giảm và tổng giá của từng sản phẩm đang đặt")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "0", description = "Lấy thông tin thành công"),
-//            @ApiResponse(responseCode = "404", description = "Lấy thông tin không thành công, đơn hàng không tồn tại"),
-//    })
+    @Operation(summary = "Lấy thông tin chi tiết các mặt hàng của order mà người dùng muốn theo dõi", description = "Người dùng lấy ra thông tin chi tiết " +
+            "bao gồm giá gốc, giá giảm và tổng giá của từng sản phẩm đang đặt")
     public CommonResponse<Map<String, Object>> getTrackOrderDetail(@PathVariable String id) {
-        return orderService.getOrderDetail(id);
+        return orderService.getTrackOrderDetail(id);
+    }
+
+    @GetMapping("/guest/tracking/{id}")
+    @Operation(summary = "Lấy thông tin chi tiết các mặt hàng của order mà người dùng ẩn danh muốn theo dõi", description = "Người dùng lấy ra thông tin chi tiết " +
+            "bao gồm giá gốc, giá giảm và tổng giá của từng sản phẩm đang đặt")
+    public CommonResponse<Map<String, Object>> getTrackOrderDetailForGuest(@PathVariable String id) {
+        return orderService.getTrackOrderDetail(id);
     }
 
 }

@@ -6,6 +6,7 @@ import com.lg.fresher.lgcommerce.exception.BusinessException;
 import com.lg.fresher.lgcommerce.exception.DuplicateDataException;
 import com.lg.fresher.lgcommerce.exception.auth.AccountStatusException;
 import com.lg.fresher.lgcommerce.exception.auth.RefreshTokenException;
+import com.lg.fresher.lgcommerce.exception.book.BookOutOfStockException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
 import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
@@ -172,6 +173,20 @@ public class DefaultExceptionHandler {
             map = buildGeneralErrorResponse(e, status);
         }
         log.warn("Request processing exception", e);
+        return new ResponseEntity<>(map, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BookOutOfStockException.class)
+    public Object handleBookOutOfStockException(HttpServletRequest request, Exception e) {
+        HttpStatus status = getStatus(request);
+        Map<String, Object> map;
+        if (e instanceof BookOutOfStockException) {
+            map = ((BookOutOfStockException) e).toMap();
+        } else if (e.getCause() instanceof BookOutOfStockException) {
+            map = ((BookOutOfStockException) e.getCause()).toMap();
+        } else {
+            map = buildGeneralErrorResponse(e, status);
+        }
         return new ResponseEntity<>(map, HttpStatus.BAD_REQUEST);
     }
 

@@ -76,7 +76,7 @@ public class OrderServiceImplTest {
 
         order = new Order();
         order.setOrderId("orderId");
-        order.setOrderStatus(OrderStatus.DAFT);
+        order.setOrderStatus(OrderStatus.DRAFT);
         order.setCreatedAt(LocalDateTime.now());
         order.setTotalAmount(100.0);
 

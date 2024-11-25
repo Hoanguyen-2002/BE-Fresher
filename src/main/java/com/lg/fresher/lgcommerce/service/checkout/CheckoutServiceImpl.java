@@ -108,7 +108,7 @@ public class CheckoutServiceImpl implements CheckoutService {
     private String generateDaftOrder(List<CheckoutItemResponse> itemResponseList, double totalPrice) {
         Order order = Order.builder()
                 .orderId(UUIDUtil.generateId())
-                .orderStatus(OrderStatus.DAFT)
+                .orderStatus(OrderStatus.DRAFT)
                 .totalAmount(totalPrice)
                 .build();
         orderRepository.save(order);

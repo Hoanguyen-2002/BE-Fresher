@@ -5,6 +5,7 @@ import com.lg.fresher.lgcommerce.model.response.book.itf.ClientBookCard;
 import com.lg.fresher.lgcommerce.repository.BaseRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -27,7 +28,9 @@ import java.util.Optional;
  *------------------------------------------------------------------------
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
- * 11/6/2024       63200504      first creation */
+ * 11/6/2024       63200504      first creation
+ * 11/23/2024      63200502      add method update book stock
+ * */
 @Repository
 public interface BookRepository extends BaseRepository<Book, String> {
 
@@ -235,4 +238,29 @@ public interface BookRepository extends BaseRepository<Book, String> {
     LIMIT 10
     """, nativeQuery = true)
     Optional<List<ClientBookCard>> findTopSeller();
+
+    /**
+     * @ Description : lg_ecommerce_be BookRepository Member Field updateBookStock
+     * <pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/25/2024           63200502    first creation
+     * <pre>
+     * @param orderId
+     */
+    @Modifying
+    @Query(value = """
+            UPDATE Book b
+            SET b.quantity = b.quantity - (
+                SELECT od.quantity
+                FROM OrderDetail od
+                WHERE od.order.orderId = :orderId
+            )
+            WHERE b.id IN (
+                SELECT od.book.bookId
+                FROM OrderDetail od
+                WHERE od.order.orderId = :orderId
+            )
+            """)
+    void updateBookStock(@Param("orderId") String orderId);
 }
