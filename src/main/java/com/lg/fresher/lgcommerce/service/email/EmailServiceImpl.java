@@ -1,7 +1,7 @@
 package com.lg.fresher.lgcommerce.service.email;
 
-import com.lg.fresher.lgcommerce.entity.order.Order;
-import com.lg.fresher.lgcommerce.entity.order.OrderDetail;
+import com.lg.fresher.lgcommerce.model.response.order.OrderDetailItem;
+import com.lg.fresher.lgcommerce.repository.order.OrderDetailRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +29,13 @@ import java.util.List;
  * 11/6/2024       63200502      first creation
  * 11/6/2024       63200502      add method send reset pass
  * 11/20/2024      63200502      add method notify order success
+ * 11/22/2024      63200502      update method sendNotifyPlaceOrderSuccess
  */
 @Service
 public class EmailServiceImpl implements EmailService {
     @Autowired
     public JavaMailSender emailSender;
+    public OrderDetailRepository orderDetailRepository;
 
     /**
      * @param to
@@ -101,18 +103,18 @@ public class EmailServiceImpl implements EmailService {
     }
 
     /**
-     * @param to
-     * @param order
+     * @param orderId
      * @throws MessagingException
      */
     @Override
     @Async
-    public void sendNotifyPlaceOrderSuccess(String to, Order order) throws MessagingException {
-        List<OrderDetail> orderItems = order.getOrderDetails();
+    public void sendNotifyPlaceOrderSuccess(String orderId) throws MessagingException {
+        List<OrderDetailItem> items = orderDetailRepository.getOrderDetailItemByOrderId(orderId);
+        if (items == null || items.isEmpty()) return;
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-        String subject = "Đơn hàng " + order.getOrderId() + " đã được đặt thành công";
+        String subject = "Đơn hàng " + items.get(0).getOrderId() + " đã được đặt thành công";
         StringBuilder htmlMessage = new StringBuilder();
         htmlMessage.append("<html>")
                 .append("<body style=\"font-family: Arial, sans-serif;\">")
@@ -124,14 +126,14 @@ public class EmailServiceImpl implements EmailService {
                 .append("<p style=\"color: #FF0000;\">Mã đơn hàng:</p>")
                 .append("<ul style=\"font-size: 16px;\">");
 
-        for (OrderDetail item : orderItems) {
+        for (OrderDetailItem item : items) {
             htmlMessage.append("<li>")
                     .append("<img src=\"")
-                    .append(item.getBook().getThumbnail())
+                    .append(item.getImageURL())
                     .append("\" alt=\"")
-                    .append(item.getBook().getTitle())
+                    .append(item.getTitle())
                     .append("\" style=\"width: 50px; height: 50px; margin-right: 10px; vertical-align: middle;\"/>")
-                    .append(item.getBook().getTitle())
+                    .append(item.getTitle())
                     .append(": ")
                     .append(item.getQuantity())
                     .append(" x ")
@@ -143,14 +145,14 @@ public class EmailServiceImpl implements EmailService {
 
         htmlMessage.append("</ul>")
                 .append("<h4 style=\"color: #333;\">Tổng giá đơn hàng: ")
-                .append(String.format("%.2f", order.getTotalAmount())) // Hiển thị tổng giá đơn hàng
+                .append(String.format("%.2f", items.get(0).getTotalAmount())) // Hiển thị tổng giá đơn hàng
                 .append("</h4>")
                 .append("</div>")
                 .append("</div>")
                 .append("</body>")
                 .append("</html>");
 
-        helper.setTo(to);
+        helper.setTo(items.get(0).getOrderEmail());
         helper.setSubject(subject);
         helper.setText(htmlMessage.toString(), true);
 

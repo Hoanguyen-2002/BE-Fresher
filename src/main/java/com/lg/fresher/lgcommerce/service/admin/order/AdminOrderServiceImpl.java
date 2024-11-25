@@ -1,8 +1,7 @@
 package com.lg.fresher.lgcommerce.service.admin.order;
 
-import com.lg.fresher.lgcommerce.constant.Status;
+import com.lg.fresher.lgcommerce.constant.SearchConstant;
 import com.lg.fresher.lgcommerce.entity.order.Order;
-import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
 import com.lg.fresher.lgcommerce.mapping.order.OrderMapper;
 import com.lg.fresher.lgcommerce.model.request.order.SearchOrderRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
@@ -38,7 +37,6 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class AdminOrderServiceImpl implements AdminOrderService{
-    private static final Set<String> VALID_SORT_FIELD = Set.of("createdAt", "updatedAt");
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
 
@@ -59,7 +57,7 @@ public class AdminOrderServiceImpl implements AdminOrderService{
                 .where(OrderSpecification.searchByKeyword(keyword, searchBy))
                 .and(OrderSpecification.filterByOrderStatus(status));
 
-        List<Sort.Order> orders = appendSort(sortRequest);
+        List<Sort.Order> orders = SearchUtil.appendOrderSort(sortRequest, SearchConstant.VALID_ORDER_SORT_FIELD);
 
         Sort sort = Sort.by(orders);
         Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
@@ -78,32 +76,4 @@ public class AdminOrderServiceImpl implements AdminOrderService{
         res.put("metaData", metaData);
         return CommonResponse.success(res);
     }
-
-    /**
-     *
-     * @ Description : lg_ecommerce_be AdminOrderServiceImpl Member Field appendSort
-     *<pre>
-     * Date of Revision Modifier Revision
-     * ---------------  ---------   -----------------------------------------------
-     * 11/22/2024           63200502    first creation
-     *<pre>
-     * @param sortRequest
-     * @return  List<Sort.Order>
-     */
-    private List<Sort.Order> appendSort(String sortRequest){
-        List<Sort.Order> orders = new ArrayList<>();
-        if (sortRequest == null || sortRequest.isEmpty()) {
-            orders.add(new Sort.Order(Sort.Direction.ASC, "createdAt"));
-            return orders;
-        }
-
-        SearchUtil.parseSortRequest(sortRequest).forEach(request -> {
-            if (!VALID_SORT_FIELD.contains(request.getSortField())) {
-                throw new InvalidRequestException(Status.FAIL_SEARCH_INVALID_PARAM);
-            }
-            orders.add(new Sort.Order(request.getSortDirection(), request.getSortField()));
-        });
-        return orders;
-    }
-
 }

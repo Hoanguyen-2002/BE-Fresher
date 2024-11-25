@@ -51,4 +51,20 @@ public class OrderSpecification {
             return criteriaBuilder.equal(root.get("orderStatus"), status);
         };
     }
+
+    /**
+     * @ Description : lg_ecommerce_be OrderSpecification Member Field searchByAccountId
+     * <pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/22/2024           63200502    first creation
+     * <pre>
+     * @param accountId
+     * @return Specification<Order>
+     */
+    public static Specification<Order> searchByAccountId(String accountId) {
+        return (root, query, criteriaBuilder) -> {
+            return criteriaBuilder.equal(root.get("account").get("accountId"), accountId);
+        };
+    }
 }

@@ -1,11 +1,14 @@
 package com.lg.fresher.lgcommerce.utils;
 
+import com.lg.fresher.lgcommerce.constant.Status;
+import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
 import com.lg.fresher.lgcommerce.model.request.common.SortRequest;
 import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * -------------------------------------------------------------------------
@@ -22,6 +25,7 @@ import java.util.List;
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
  * 11/12/2024       63200502      first creation
+ * 11/22/2024       63200502      add method to handle order sort
  */
 @UtilityClass
 public class SearchUtil {
@@ -55,5 +59,31 @@ public class SearchUtil {
             sortRequestList.add(sortRequest);
         }
         return sortRequestList;
+    }
+
+    /**
+     * @ Description : lg_ecommerce_be AccountServiceImpl Member Field appendSort
+     * <pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/22/2024           63200502    first creation
+     * <pre>
+     * @param sortRequest
+     * @return List<Sort.Order>
+     */
+    public List<Sort.Order> appendOrderSort(String sortRequest, Set<String> validSortFields) {
+        List<Sort.Order> orders = new ArrayList<>();
+        if (sortRequest == null || sortRequest.isEmpty()) {
+            orders.add(new Sort.Order(Sort.Direction.ASC, "createdAt"));
+            return orders;
+        }
+
+        SearchUtil.parseSortRequest(sortRequest).forEach(request -> {
+            if (!validSortFields.contains(request.getSortField())) {
+                throw new InvalidRequestException(Status.FAIL_SEARCH_INVALID_PARAM);
+            }
+            orders.add(new Sort.Order(request.getSortDirection(), request.getSortField()));
+        });
+        return orders;
     }
 }

@@ -2,30 +2,41 @@ package com.lg.fresher.lgcommerce.service.account;
 
 import com.lg.fresher.lgcommerce.config.security.UserDetailsImpl;
 import com.lg.fresher.lgcommerce.constant.AccountStatus;
+import com.lg.fresher.lgcommerce.constant.SearchConstant;
 import com.lg.fresher.lgcommerce.constant.Status;
 import com.lg.fresher.lgcommerce.entity.account.Account;
 import com.lg.fresher.lgcommerce.entity.account.Address;
 import com.lg.fresher.lgcommerce.entity.account.Profile;
+import com.lg.fresher.lgcommerce.entity.order.Order;
 import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
 import com.lg.fresher.lgcommerce.exception.auth.AccountStatusException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
 import com.lg.fresher.lgcommerce.mapping.account.AccountMapper;
+import com.lg.fresher.lgcommerce.mapping.order.OrderMapper;
 import com.lg.fresher.lgcommerce.model.request.account.UpdateAccountRequest;
 import com.lg.fresher.lgcommerce.model.request.address.UpdateAddressRequest;
+import com.lg.fresher.lgcommerce.model.request.order.SearchOrderRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.StringResponse;
 import com.lg.fresher.lgcommerce.model.response.account.AccountInfoResponse;
+import com.lg.fresher.lgcommerce.model.response.common.MetaData;
 import com.lg.fresher.lgcommerce.repository.account.AccountRepository;
+import com.lg.fresher.lgcommerce.repository.order.OrderRepository;
+import com.lg.fresher.lgcommerce.service.order.OrderSpecification;
+import com.lg.fresher.lgcommerce.utils.SearchUtil;
 import com.lg.fresher.lgcommerce.utils.UUIDUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * -------------------------------------------------------------------------
@@ -45,6 +56,7 @@ import java.util.Map;
  * 11/8/2024       63200502      add update account profile
  * 11/12/2024      63200502      add method to get my info
  * 11/15/2024      63200502      update checking account status
+ * 11/22/2024      63200502      add method to get my order
  */
 @Service
 @RequiredArgsConstructor
@@ -53,6 +65,8 @@ public class AccountServiceImpl implements AccountService {
     private static final int MAX_ADDRESS = 5;
     private final AccountMapper accountMapper;
     private final AccountRepository accountRepository;
+    private final OrderRepository orderRepository;
+    private final OrderMapper orderMapper;
 
     @Override
     @Transactional
@@ -96,6 +110,49 @@ public class AccountServiceImpl implements AccountService {
         AccountInfoResponse accountInfoResponse = accountMapper.toAccountInfoResponse(account);
         Map<String, Object> res = new HashMap<>();
         res.put("content", accountInfoResponse);
+        return CommonResponse.success(res);
+    }
+
+    /**
+     * @return
+     */
+    @Override
+    public CommonResponse<Map<String, Object>> getMyOrders(SearchOrderRequest searchOrderRequest) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal();
+        Account account = accountRepository.findById(userDetails.getUserId()).orElseThrow(
+                () -> new DataNotFoundException(Status.FAIL_USER_NOT_FOUND.label())
+        );
+        if (account.getStatus() == AccountStatus.BANNED) {
+            throw new AccountStatusException(Status.FAIL_USER_IS_BANNED);
+        }
+
+        String sortRequest = searchOrderRequest.getSortRequest();
+        String status = searchOrderRequest.getStatus();
+        int pageNo = searchOrderRequest.getPageNo();
+        int pageSize = searchOrderRequest.getPageSize();
+
+        Specification<Order> orderSpecification = Specification
+                .where(OrderSpecification.filterByOrderStatus(status))
+                .and(OrderSpecification.searchByAccountId(account.getAccountId()));
+
+        List<Sort.Order> orders = SearchUtil.appendOrderSort(sortRequest, SearchConstant.VALID_ORDER_SORT_FIELD);
+
+        Sort sort = Sort.by(orders);
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        MetaData metaData = new MetaData();
+        Page<Order> orderResponse = Page.empty();
+
+        orderResponse = orderRepository.findAll(orderSpecification, pageable);
+
+        metaData.setOffSet(pageNo);
+        metaData.setTotalElements(orderResponse.getTotalElements());
+        metaData.setLimit(pageSize);
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("content", orderResponse.getContent().stream().map(orderMapper::toGetListOrderResponse));
+        res.put("metaData", metaData);
         return CommonResponse.success(res);
     }
 

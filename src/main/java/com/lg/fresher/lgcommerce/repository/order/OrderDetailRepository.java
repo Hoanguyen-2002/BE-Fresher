@@ -2,6 +2,7 @@ package com.lg.fresher.lgcommerce.repository.order;
 
 import com.lg.fresher.lgcommerce.entity.order.OrderDetail;
 import com.lg.fresher.lgcommerce.model.response.checkout.CheckoutItemResponse;
+import com.lg.fresher.lgcommerce.model.response.order.OrderDetailItem;
 import com.lg.fresher.lgcommerce.repository.BaseRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -46,4 +47,31 @@ public interface OrderDetailRepository extends BaseRepository<OrderDetail, Strin
             WHERE od.order.orderId = :orderId
             """)
     List<CheckoutItemResponse> getAllOrderDetailByOrderId(@Param("orderId") String orderId);
+
+    /**
+     * @ Description : lg_ecommerce_be OrderDetailRepository Member Field getOrderDetailItemByOrderId
+     * <pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/22/2024           63200502    first creation
+     * <pre>
+     * @param orderId
+     * @return List<OrderDetailItem>
+     */
+    @Query("""
+            SELECT new com.lg.fresher.lgcommerce.model.response.order.OrderDetailItem(
+                o.orderId,
+                o.email,
+                b.thumbnail,
+                b.title,
+                od.quantity,
+                od.finalPrice,
+                od.total,
+                o.totalAmount)
+            FROM OrderDetail od
+            JOIN od.book b
+            JOIN od.order o
+            WHERE o.orderId = :orderId
+            """)
+    List<OrderDetailItem> getOrderDetailItemByOrderId(@Param("orderId") String orderId);
 }
