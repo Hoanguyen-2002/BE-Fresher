@@ -1,6 +1,7 @@
 package com.lg.fresher.lgcommerce.service.admin.order;
 
 import com.lg.fresher.lgcommerce.model.request.order.SearchOrderRequest;
+import com.lg.fresher.lgcommerce.model.request.order.UpdateOrderStatusRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.StringResponse;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -21,7 +22,9 @@ import java.util.Map;
  *------------------------------------------------------------------------
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
- * 11/21/2024       63200502      add method get list order */
+ * 11/21/2024       63200502      add method get list order
+ * 11/25/2024       63200502      add method update order status
+ * */
 public interface AdminOrderService {
     /**
      *
@@ -47,4 +50,17 @@ public interface AdminOrderService {
      * @return CommonResponse<Map < String, Object>>
      */
     CommonResponse<StringResponse> acceptOrder(String orderId);
+
+    /**
+     * @ Description : lg_ecommerce_be AdminOrderService Member Field updateOrderStatus
+     * <pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 11/25/2024           63200502    first creation
+     * <pre>
+     * @param orderId
+     * @param updateOrderStatusRequest
+     * @return CommonMessages<StringResponse>
+     */
+    CommonResponse<StringResponse> updateOrderStatus(String orderId, UpdateOrderStatusRequest updateOrderStatusRequest);
 }

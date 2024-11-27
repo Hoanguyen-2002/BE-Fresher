@@ -251,16 +251,17 @@ public interface BookRepository extends BaseRepository<Book, String> {
     @Modifying
     @Query(value = """
             UPDATE Book b
-            SET b.quantity = b.quantity - (
+            SET b.quantity = b.quantity - (:adjustment * (
                 SELECT od.quantity
                 FROM OrderDetail od
                 WHERE od.order.orderId = :orderId
-            )
+                AND od.book.bookId = b.bookId
+            )),  b.updatedAt = CURRENT_TIMESTAMP
             WHERE b.id IN (
                 SELECT od.book.bookId
                 FROM OrderDetail od
                 WHERE od.order.orderId = :orderId
             )
             """)
-    void updateBookStock(@Param("orderId") String orderId);
+    void updateBookStock(@Param("orderId") String orderId, @Param("adjustment") int adjustment);
 }

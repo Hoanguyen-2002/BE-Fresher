@@ -80,9 +80,21 @@ public enum Status {
 
     ACCEPT_ORDER_SUCCESS(17000, "Xác nhận đơn hàng thành công"),
     ACCEPT_ORDER_FAIL_ITEM_OUT_OF_STOCK(17100, "Xử lý đơn hàng thất bại, số lượng trong kho không đủ"),
-    ACCEPT_ORDER_FAIL_ORDER_STATUS_HAVE_CHANGED(17101, "Trạng thái đơn hàng đã bị thay đổi, vui lòng tải lại trang"),
+    ACCEPT_ORDER_FAIL_ORDER_STATUS_HAVE_CHANGED(17101, "Trạng thái đơn hàng đã bị thay đổi" +
+            "hoặc trạng thái gửi lên không hợp lệ. Vui lòng tải lại trang"),
     ACCEPT_ORDER_FAIL_ORDER_NOT_FOUND(17102, "Không tìm thấy đơn hàng, vui lòng thử lại"),
     ACCEPT_ORDER_FAIL_DETAIL_ITEM_OUT_OF_STOCK(17103, "Số lượng trong kho không đủ"),
+
+    UPDATE_ORDER_STATUS_SUCCESS(18000, "Cập nhật trạng thái đơn hàng thành công"),
+    UPDATE_ORDER_STATUS_FAIL_ORDER_NOT_FOUND(18100, "Không tìm thấy đơn hàng, vui lòng thử lại"),
+    UPDATE_ORDER_STATUS_FAIL_ORDER_STATUS_HAVE_CHANGED(18101, "Trạng thái đơn hàng đã bị thay đổi" +
+            "hoặc trạng thái gửi lên không hợp lệ. Vui lòng tải lại trang"),
+
+    CANCEL_ORDER_SUCCESS(19000, "Hủy đơn hàng thành công"),
+    CANCEL_ORDER_FAIL_ORDER_NOT_FOUND(19100, "Hủy đơn hàng thất bại, không tìm thấy đơn hàng"),
+    CANCEL_ORDER_FAIL_ORDER_IS_PROCESSING(19101, "Đơn hàng đang được xử lý, không thể hủy đơn. Vui lòng " +
+            "liên hệ Admin để biết thêm thông tin"),
+    CANCEL_ORDER_FAIL_USER_IS_NOT_OWNER(19102, "Bạn không sở hữu đơn hàng này")
     ;
 
 

@@ -8,6 +8,7 @@ import com.lg.fresher.lgcommerce.entity.account.Account;
 import com.lg.fresher.lgcommerce.entity.account.Address;
 import com.lg.fresher.lgcommerce.entity.account.Profile;
 import com.lg.fresher.lgcommerce.entity.order.Order;
+import com.lg.fresher.lgcommerce.exception.BusinessException;
 import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
 import com.lg.fresher.lgcommerce.exception.auth.AccountStatusException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
@@ -82,14 +83,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public CommonResponse<StringResponse> updateAccountInfo(UpdateAccountRequest updateAccountRequest) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Account account = accountRepository.findById(userDetails.getUserId()).orElseThrow(
-                () -> new DataNotFoundException(Status.FAIL_USER_NOT_FOUND.label())
-        );
-
-        if(account.getStatus() == AccountStatus.BANNED){
-            throw  new AccountStatusException(Status.FAIL_USER_IS_BANNED);
-        }
+        Account account = getAccountFromContext();
 
         updateUserProfile(account.getProfile(), updateAccountRequest);
         updateUserAddress(account, updateAccountRequest);
@@ -100,13 +94,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public CommonResponse<Map<String, Object>> getMyInfo() {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Account account = accountRepository.findById(userDetails.getUserId()).orElseThrow(
-                () -> new DataNotFoundException(Status.FAIL_USER_NOT_FOUND.label())
-        );
-        if(account.getStatus() == AccountStatus.BANNED){
-            throw  new AccountStatusException(Status.FAIL_USER_IS_BANNED);
-        }
+        Account account = getAccountFromContext();
         AccountInfoResponse accountInfoResponse = accountMapper.toAccountInfoResponse(account);
         Map<String, Object> res = new HashMap<>();
         res.put("content", accountInfoResponse);
@@ -118,14 +106,7 @@ public class AccountServiceImpl implements AccountService {
      */
     @Override
     public CommonResponse<Map<String, Object>> getMyOrders(SearchOrderRequest searchOrderRequest) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder
-                .getContext().getAuthentication().getPrincipal();
-        Account account = accountRepository.findById(userDetails.getUserId()).orElseThrow(
-                () -> new DataNotFoundException(Status.FAIL_USER_NOT_FOUND.label())
-        );
-        if (account.getStatus() == AccountStatus.BANNED) {
-            throw new AccountStatusException(Status.FAIL_USER_IS_BANNED);
-        }
+        Account account = getAccountFromContext();
 
         String sortRequest = searchOrderRequest.getSortRequest();
         String status = searchOrderRequest.getStatus();
@@ -154,6 +135,26 @@ public class AccountServiceImpl implements AccountService {
         res.put("content", orderResponse.getContent().stream().map(orderMapper::toGetListOrderResponse));
         res.put("metaData", metaData);
         return CommonResponse.success(res);
+    }
+
+    /**
+     * @return
+     */
+    @Override
+    public Account getAccountFromContext() {
+        try {
+            UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder
+                    .getContext().getAuthentication().getPrincipal();
+            Account account = accountRepository.findById(userDetails.getUserId()).orElseThrow(
+                    () -> new DataNotFoundException(Status.FAIL_USER_NOT_FOUND.label())
+            );
+            if (account.getStatus() == AccountStatus.BANNED) {
+                throw new AccountStatusException(Status.FAIL_USER_IS_BANNED);
+            }
+            return account;
+        } catch (ClassCastException e) {
+            throw new BusinessException(Status.FAIL_AUTHENTICATION);
+        }
     }
 
     //TODO: find the smarter way

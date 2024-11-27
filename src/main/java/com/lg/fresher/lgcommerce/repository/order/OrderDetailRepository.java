@@ -94,7 +94,7 @@ public interface OrderDetailRepository extends BaseRepository<OrderDetail, Strin
     @Modifying
     @Query(value = """
             UPDATE OrderDetail od
-            SET od.note = :message
+            SET od.note = :message, od.updatedAt = CURRENT_TIMESTAMP
             WHERE od.orderDetailId IN (:orderDetailIds)
             """)
     void appendMessage(@Param("orderDetailIds") List<String> orderDetailIds, @Param("message") String message);
@@ -102,7 +102,7 @@ public interface OrderDetailRepository extends BaseRepository<OrderDetail, Strin
     @Modifying
     @Query(value = """
             UPDATE OrderDetail od
-            SET od.note = ""
+            SET od.note = "",  od.updatedAt = CURRENT_TIMESTAMP
             WHERE od.order.orderId = :orderId
             """)
     void removeErrorMessage(@Param("orderId") String orderId);

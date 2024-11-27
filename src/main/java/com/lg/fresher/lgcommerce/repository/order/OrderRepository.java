@@ -43,7 +43,7 @@ public interface OrderRepository extends BaseRepository<Order, String>, JpaSpeci
     @Modifying
     @Query(value = """
             UPDATE Order o
-            SET o.note = :message
+            SET o.note = :message, o.updatedAt = CURRENT_TIMESTAMP
             WHERE o.orderId = :orderId
             """)
     void appendMessage(@Param("orderId") String orderId, @Param("message") String message);
@@ -61,7 +61,7 @@ public interface OrderRepository extends BaseRepository<Order, String>, JpaSpeci
     @Modifying
     @Query("""
             UPDATE Order o
-            SET o.orderStatus = :orderStatus
+            SET o.orderStatus = :orderStatus, o.updatedAt = CURRENT_TIMESTAMP
             WHERE o.orderId = :orderId
             """)
     void updateOrderStatus(@Param("orderId") String orderId,

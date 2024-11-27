@@ -1,6 +1,7 @@
 package com.lg.fresher.lgcommerce.controller.admin.order;
 
 import com.lg.fresher.lgcommerce.model.request.order.SearchOrderRequest;
+import com.lg.fresher.lgcommerce.model.request.order.UpdateOrderStatusRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.StringResponse;
 import com.lg.fresher.lgcommerce.service.admin.order.AdminOrderService;
@@ -56,5 +57,18 @@ public class AdminOrderController {
     })
     public CommonResponse<StringResponse> acceptOrder(@PathVariable String orderId) {
         return orderService.acceptOrder(orderId);
+    }
+
+    @PutMapping("/{orderId}")
+    @Operation(summary = "Cập nhật trạng thái đơn hàng", description = "Nhân viên quản lý cập nhật trạng thái đơn hàng của người dùng")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "0", description = "Cập nhật trạng thái đơn thành công"),
+            @ApiResponse(responseCode = "17101", description = "Trạng thái đơn hàng đã bị thay đổi hoặc hông hợp lệ, " +
+                    "vui lòng tải lại trang"),
+            @ApiResponse(responseCode = "17102", description = "Không tìm thấy đơn hàng, vui lòng thử lại")
+    })
+    public CommonResponse<StringResponse> updateOrderStatus(@PathVariable String orderId,
+                                                            @RequestBody @Valid UpdateOrderStatusRequest updateOrderStatusRequest) {
+        return orderService.updateOrderStatus(orderId, updateOrderStatusRequest);
     }
 }

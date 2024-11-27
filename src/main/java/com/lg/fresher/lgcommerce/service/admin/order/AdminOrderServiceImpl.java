@@ -9,6 +9,7 @@ import com.lg.fresher.lgcommerce.exception.book.BookOutOfStockException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
 import com.lg.fresher.lgcommerce.mapping.order.OrderMapper;
 import com.lg.fresher.lgcommerce.model.request.order.SearchOrderRequest;
+import com.lg.fresher.lgcommerce.model.request.order.UpdateOrderStatusRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.StringResponse;
 import com.lg.fresher.lgcommerce.model.response.common.MetaData;
@@ -29,26 +30,31 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- *
- -------------------------------------------------------------------------
+ * -------------------------------------------------------------------------
  * LG CNS Ecommerce
- *------------------------------------------------------------------------
+ * ------------------------------------------------------------------------
+ *
  * @ Class Name : AdminOrderServiceImpl
  * @ Description : lg_ecommerce_be AdminOrderServiceImpl
  * @ author lg_ecommerce_be Dev Team 63200502
  * @ since 11/21/2024
- *------------------------------------------------------------------------
+ * ------------------------------------------------------------------------
  * Modification Information
- *------------------------------------------------------------------------
+ * ------------------------------------------------------------------------
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
- * 11/21/2024       63200502      add method to get list order */
+ * 11/21/2024       63200502      add method to get list order
+ * 11/25/2024       63200502      add method to update order status
+ */
 @Service
 @RequiredArgsConstructor
-public class AdminOrderServiceImpl implements AdminOrderService{
+public class AdminOrderServiceImpl implements AdminOrderService {
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final OrderMapper orderMapper;
@@ -98,59 +104,56 @@ public class AdminOrderServiceImpl implements AdminOrderService{
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = BookOutOfStockException.class)
     public synchronized CommonResponse<StringResponse> acceptOrder(String orderId) {
-        boolean isOrderValid = true;
-        List<String> invalidOrderItemsId = new ArrayList<>();
-
         checkingOrderValidForUpdateStatus(orderId, OrderStatus.PROCESSING);
 
         List<OrderDetailItem> items = orderDetailRepository.getOrderDetailItemByOrderId(orderId);
 
-        for (OrderDetailItem detailItem : items) {
-            if (detailItem.getQuantity() > detailItem.getStockQuantity()) {
-                isOrderValid = false;
-                invalidOrderItemsId.add(detailItem.getOrderDetailId());
-            }
-        }
+        List<String> invalidOrderItemsId = new ArrayList<>();
+        List<String> validOrderItemsId = new ArrayList<>();
 
-        if (!isOrderValid) {
-            appendErrorMessage(invalidOrderItemsId, items.get(0).getOrderId());
+        items.forEach(detailItem -> {
+            if (detailItem.getQuantity() > detailItem.getStockQuantity()) {
+                invalidOrderItemsId.add(detailItem.getOrderDetailId());
+            } else {
+                validOrderItemsId.add(detailItem.getOrderDetailId());
+            }
+        });
+
+        if (!invalidOrderItemsId.isEmpty()) {
+            orderRepository.appendMessage(orderId, Status.ACCEPT_ORDER_FAIL_ITEM_OUT_OF_STOCK.label());
+            orderDetailRepository.appendMessage(invalidOrderItemsId, Status.ACCEPT_ORDER_FAIL_DETAIL_ITEM_OUT_OF_STOCK.label());
+            orderDetailRepository.appendMessage(validOrderItemsId, OrderUtil.DEFAULT_DETAIL_ITEM_NOTE);
             throw new BookOutOfStockException(Status.ACCEPT_ORDER_FAIL_ITEM_OUT_OF_STOCK);
         }
 
-        updateBookStock(orderId);
+        updateBookStock(orderId, OrderUtil.PLACE_ORDER);
         changeOrderStatus(orderId, OrderStatus.PROCESSING);
-        appendSuccessMessage(orderId);
+        orderRepository.appendMessage(orderId, Status.ACCEPT_ORDER_SUCCESS.label());
+        orderDetailRepository.appendMessage(validOrderItemsId, OrderUtil.DEFAULT_DETAIL_ITEM_NOTE);
 
         return CommonResponse.success(Status.ACCEPT_ORDER_SUCCESS.label());
     }
 
     /**
-     * @ Description : lg_ecommerce_be AdminOrderServiceImpl Member Field appendErrorMessage
-     * <pre>
-     * Date of Revision Modifier Revision
-     * ---------------  ---------   -----------------------------------------------
-     * 11/25/2024           63200502    first creation
-     * <pre>
-     * @param invalidOrderItemsId
      * @param orderId
+     * @param updateOrderStatusRequest
+     * @return
      */
-    private void appendErrorMessage(List<String> invalidOrderItemsId, String orderId) {
-        orderRepository.appendMessage(orderId, Status.ACCEPT_ORDER_FAIL_ITEM_OUT_OF_STOCK.label());
-        orderDetailRepository.appendMessage(invalidOrderItemsId, Status.ACCEPT_ORDER_FAIL_DETAIL_ITEM_OUT_OF_STOCK.label());
-    }
-
-    /**
-     * @ Description : lg_ecommerce_be AdminOrderServiceImpl Member Field appendSuccessMessage
-     * <pre>
-     * Date of Revision Modifier Revision
-     * ---------------  ---------   -----------------------------------------------
-     * 11/25/2024           63200502    first creation
-     * <pre>
-     * @param orderId
-     */
-    private void appendSuccessMessage(String orderId) {
-        orderRepository.appendMessage(orderId, Status.ACCEPT_ORDER_SUCCESS.label());
-        orderDetailRepository.removeErrorMessage(orderId);
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    public CommonResponse<StringResponse> updateOrderStatus(String orderId, UpdateOrderStatusRequest updateOrderStatusRequest) {
+        OrderStatus newStatus = OrderStatus.valueOf(updateOrderStatusRequest.getNewOrderStatus());
+        checkingOrderValidForUpdateStatus(orderId, newStatus);
+        if (newStatus == OrderStatus.DENIED) {
+            updateBookStock(orderId, OrderUtil.CANCEL_ORDER);
+            String message = updateOrderStatusRequest.getMessage();
+            if (message == null || message.isEmpty()) {
+                message = OrderUtil.DEFAULT_ADMIN_REASON_DENIED_ORDER;
+            }
+            orderRepository.appendMessage(orderId, message);
+        }
+        changeOrderStatus(orderId, newStatus);
+        return CommonResponse.success(Status.UPDATE_ORDER_STATUS_SUCCESS.label());
     }
 
     /**
@@ -168,20 +171,21 @@ public class AdminOrderServiceImpl implements AdminOrderService{
                 () -> new DataNotFoundException(Status.ACCEPT_ORDER_FAIL_ORDER_NOT_FOUND.label()));
         if (!OrderUtil.isOrderStatusValid(order.getOrderStatus(), orderStatus))
             throw new InvalidRequestException(Status.ACCEPT_ORDER_FAIL_ORDER_STATUS_HAVE_CHANGED);
-
     }
 
     /**
+     *
      * @ Description : lg_ecommerce_be AdminOrderServiceImpl Member Field updateBookStock
-     * <pre>
+     *<pre>
      * Date of Revision Modifier Revision
      * ---------------  ---------   -----------------------------------------------
-     * 11/25/2024           63200502    first creation
-     * <pre>
+     * 11/26/2024           63200502    first creation
+     *<pre>
      * @param orderId
+     * @param adjustment
      */
-    private void updateBookStock(String orderId) {
-        bookRepository.updateBookStock(orderId);
+    private void updateBookStock(String orderId, int adjustment) {
+        bookRepository.updateBookStock(orderId, adjustment);
     }
 
     /**

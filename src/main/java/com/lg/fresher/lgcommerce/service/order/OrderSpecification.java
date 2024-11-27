@@ -20,6 +20,9 @@ import org.springframework.data.jpa.domain.Specification;
  * ---------------  ---------   ------------------------------------------
  * 11/21/2024       63200502      first creation */
 public class OrderSpecification {
+    private static final String CANCEL_STATUS = OrderStatus.CANCEL.toString();
+    private static final String DENIED_STATUS = OrderStatus.CANCEL.toString();
+    private static final String ORDER_STATUS = "orderStatus";
     public static Specification<Order> searchByKeyword(String searchKeyword, String searchBy) {
         return (root, query, criteriaBuilder) -> {
             if (searchKeyword == null || searchKeyword.isEmpty()) {
@@ -39,6 +42,7 @@ public class OrderSpecification {
      * Date of Revision Modifier Revision
      * ---------------  ---------   -----------------------------------------------
      * 11/21/2024           63200502    first creation
+     * 11/26/2024           63200502    modify to return both CANCEL and DENIED status
      *<pre>
      * @param status
      * @return  Specification<Order>
@@ -46,9 +50,15 @@ public class OrderSpecification {
     public static Specification<Order> filterByOrderStatus(String status) {
         return (root, query, criteriaBuilder) -> {
             if (status == null || status.isEmpty()) {
-                return criteriaBuilder.notEqual(root.get("orderStatus"), OrderStatus.DRAFT);
+                return criteriaBuilder.notEqual(root.get(ORDER_STATUS), OrderStatus.DRAFT);
             }
-            return criteriaBuilder.equal(root.get("orderStatus"), status);
+            if(status.equals(CANCEL_STATUS) || status.equals(DENIED_STATUS)) {
+                return criteriaBuilder.or(
+                        criteriaBuilder.equal(root.get(ORDER_STATUS), CANCEL_STATUS),
+                        criteriaBuilder.equal(root.get(ORDER_STATUS), DENIED_STATUS)
+                );
+            }
+            return criteriaBuilder.equal(root.get(ORDER_STATUS), status);
         };
     }
 

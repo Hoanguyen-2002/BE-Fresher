@@ -53,13 +53,15 @@ public class AdminAccountServiceImpl implements AdminAccountService {
      */
     @Override
     public CommonResponse<Map<String, Object>> searchAccount(SearchAccountRequest searchAccountRequest) {
-        String keyword = searchAccountRequest.getKeyword().trim();
+        String keyword = searchAccountRequest.getKeyword();
         String sortRequest = searchAccountRequest.getSortRequest();
         String filterRequest = searchAccountRequest.getFilterRequest();
         int pageNo = searchAccountRequest.getPageNo();
         int pageSize = searchAccountRequest.getPageSize();
 
-        Specification<Account> accountSpecification = Specification.where(AccountSpecification.hasFullNameLike(keyword));
+        Specification<Account> accountSpecification = Specification.
+            where(AccountSpecification.hasFullNameLike(keyword))
+            .and(AccountSpecification.excludeAdminAccount());
 
         List<Sort.Order> orders = new ArrayList<>();
         if (sortRequest != null && !sortRequest.isEmpty()) {

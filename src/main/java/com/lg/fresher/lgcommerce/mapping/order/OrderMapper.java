@@ -29,5 +29,6 @@ public interface OrderMapper {
     @Mapping(target = "address", source = "detailAddress")
     @Mapping(target = "lastUpdated", source = "updatedAt")
     @Mapping(target = "total", source = "totalAmount")
+    @Mapping(target = "note", source = "note")
     GetListOrderResponse toGetListOrderResponse(Order order);
 }

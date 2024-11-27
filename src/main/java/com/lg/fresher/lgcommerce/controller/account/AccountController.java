@@ -1,10 +1,12 @@
 package com.lg.fresher.lgcommerce.controller.account;
 
+import com.lg.fresher.lgcommerce.model.request.account.CancelOrderRequest;
 import com.lg.fresher.lgcommerce.model.request.account.UpdateAccountRequest;
 import com.lg.fresher.lgcommerce.model.request.order.SearchOrderRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.StringResponse;
 import com.lg.fresher.lgcommerce.service.account.AccountService;
+import com.lg.fresher.lgcommerce.service.account.order.AccountOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,6 +41,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AccountController {
     private final AccountService accountService;
+    private final AccountOrderService accountOrderService;
 
     @GetMapping("/myInfo")
     @Operation(summary = "Lấy thông tin cá nhân của mình", description = "Trả về thông tin account")
@@ -69,5 +72,19 @@ public class AccountController {
     })
     public CommonResponse<Map<String, Object>> getMyOrders(@Valid @RequestBody SearchOrderRequest searchOrderRequest) {
         return accountService.getMyOrders(searchOrderRequest);
+    }
+
+    @PutMapping("/myOrders/{orderId}")
+    @Operation(summary = "Người dùng hủy đơn", description = "Người dùng hủy đơn mà họ đã đặt nếu đơn chưa được PROCESSING")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "0", description = "Hủy đơn hàng thành công"),
+            @ApiResponse(responseCode = "19100", description = "Hủy đơn hàng thất bại, không tìm thấy đơn hàng"),
+            @ApiResponse(responseCode = "19101", description = "Đơn hàng đang được xử lý, không thể hủy đơn. " +
+                    "Vui lòng liên hệ Admin để biết thêm thông tin"),
+            @ApiResponse(responseCode = "19102", description = "Bạn không sở hữu đơn hàng này"),
+    })
+    public CommonResponse<StringResponse> cancelOrder(@PathVariable String orderId,
+                                                           @Valid @RequestBody CancelOrderRequest cancelOrderRequest) {
+        return accountOrderService.cancelOrder(orderId, cancelOrderRequest);
     }
 }

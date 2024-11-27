@@ -1,5 +1,6 @@
 package com.lg.fresher.lgcommerce.service.account;
 
+import com.lg.fresher.lgcommerce.entity.account.Account;
 import com.lg.fresher.lgcommerce.model.request.account.UpdateAccountRequest;
 import com.lg.fresher.lgcommerce.model.request.order.SearchOrderRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
@@ -15,5 +16,7 @@ public interface AccountService {
     CommonResponse<Map<String, Object>> getMyInfo();
 
     CommonResponse<Map<String, Object>> getMyOrders(SearchOrderRequest searchOrderRequest);
+
+    Account getAccountFromContext();
 
 }
