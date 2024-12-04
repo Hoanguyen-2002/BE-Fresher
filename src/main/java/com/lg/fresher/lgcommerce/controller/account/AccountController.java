@@ -71,7 +71,7 @@ public class AccountController {
             @ApiResponse(responseCode = "404", description = "Không tìm thấy thông tin", content = @Content)
     })
     public CommonResponse<Map<String, Object>> getMyOrders(@Valid @RequestBody SearchOrderRequest searchOrderRequest) {
-        return accountService.getMyOrders(searchOrderRequest);
+        return accountOrderService.getMyOrders(searchOrderRequest);
     }
 
     @PutMapping("/myOrders/{orderId}")

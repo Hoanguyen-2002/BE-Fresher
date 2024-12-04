@@ -28,7 +28,7 @@ public class Book extends BaseEntity {
     private String bookId;
 
     @Size(max = 255)
-    @Column(name = "title", columnDefinition = "VARCHAR(255) COLLATE utf8mb4_bin")
+    @Column(name = "title", columnDefinition = "VARCHAR(255)")
     private String title;
 
     @Size(max = 255)

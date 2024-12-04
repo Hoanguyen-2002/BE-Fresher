@@ -1,8 +1,10 @@
 package com.lg.fresher.lgcommerce.service.account.order;
 
 import com.lg.fresher.lgcommerce.model.request.account.CancelOrderRequest;
+import com.lg.fresher.lgcommerce.model.request.order.SearchOrderRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.StringResponse;
+import java.util.Map;
 
 /**
  * -------------------------------------------------------------------------
@@ -19,6 +21,7 @@ import com.lg.fresher.lgcommerce.model.response.StringResponse;
  * Date of Revision Modifier Revision
  * ---------------  ---------   ------------------------------------------
  * 11/26/2024       63200502      first creation
+ * 12/02/2024       63200502      move method get my order into account order service
  */
 public interface AccountOrderService {
     /**
@@ -34,4 +37,15 @@ public interface AccountOrderService {
      */
     CommonResponse<StringResponse> cancelOrder(String orderId, CancelOrderRequest cancelOrderRequest);
 
+    /**
+     * @ Description : lg_ecommerce_be AccountOrderService Member Field getMyOrders
+     * <pre>
+     * Date of Revision Modifier Revision
+     * ---------------  ---------   -----------------------------------------------
+     * 12/2/2024           63200502    first creation
+     * <pre>
+     * @param searchOrderRequest
+     * @return CommonResponse<Map < String, Object>>
+     */
+    CommonResponse<Map<String, Object>> getMyOrders(SearchOrderRequest searchOrderRequest);
 }

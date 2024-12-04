@@ -15,8 +15,10 @@ import com.lg.fresher.lgcommerce.model.response.checkout.CheckoutItemResponse;
 import com.lg.fresher.lgcommerce.model.response.order.ConfirmOrderResponse;
 import com.lg.fresher.lgcommerce.repository.checkout.PaymentMethodRepository;
 import com.lg.fresher.lgcommerce.repository.checkout.ShippingMethodRepository;
+import com.lg.fresher.lgcommerce.repository.order.OrderDetailRepository;
 import com.lg.fresher.lgcommerce.repository.order.OrderRepository;
 import com.lg.fresher.lgcommerce.service.email.EmailService;
+import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -44,6 +46,8 @@ public class OrderServiceImplTest {
     private ShippingMethodRepository shippingMethodRepository;
     @Mock
     private PaymentMethodRepository paymentMethodRepository;
+    @Mock
+    private OrderDetailRepository orderDetailRepository;
     @Mock
     private AuthenticationManager authenticationManager;
     @Mock
@@ -121,32 +125,35 @@ public class OrderServiceImplTest {
     @Test
     void test_get_order_detail_item_success() {
         String orderId = "orderId";
-        OrderDetail orderDetail = new OrderDetail();
-        Book book = new Book();
-        book.setTitle("bookTitle");
-        book.setThumbnail("thumbnail");
+        CheckoutItemResponse checkoutItemResponse = new CheckoutItemResponse();
+        checkoutItemResponse.setId("orderItemId");
+        checkoutItemResponse.setTitle("orderItemTitle");
+        checkoutItemResponse.setImageURL("orderItemURL");
+        checkoutItemResponse.setQuantity(10);
+        checkoutItemResponse.setOriginalPrice(100.0);
+        checkoutItemResponse.setSalePrice(0.0);
+        checkoutItemResponse.setTotalPrice(1000.0);
 
-        orderDetail.setBook(book);
-        orderDetail.setOrderDetailId("orderDetailId");
-        orderDetail.setBasePrice(100.0);
-        orderDetail.setDiscountPrice(0.0);
-        orderDetail.setQuantity(2);
-        orderDetail.setTotal(200.0);
 
-        Order newOrder = new Order();
-        newOrder.setOrderDetails(List.of(orderDetail));
-        Mockito.when(orderRepository.findById(anyString())).thenReturn(Optional.of(newOrder));
+        Mockito.when(orderDetailRepository.getAllOrderDetailByOrderId(anyString())).thenReturn(
+            List.of(checkoutItemResponse));
 
         CommonResponse<Map<String, Object>> actualResponse = orderService.getOrderDetail(orderId);
 
-        List<CheckoutItemResponse> itemResponses = (List<CheckoutItemResponse>) actualResponse.getData().get("content");
+        List<CheckoutItemResponse> itemResponses = (List<CheckoutItemResponse>) actualResponse
+            .getData().get("content");
         assertNotNull(itemResponses);
     }
 
     @Test
     void test_get_order_detail_item_fail_order_not_existed() {
-        when(orderRepository.findById(anyString())).thenReturn(Optional.empty());
+        when(orderDetailRepository.getAllOrderDetailByOrderId(anyString()))
+            .thenReturn(List.of());
 
-        assertThrows(DataNotFoundException.class, () -> orderService.getOrderDetail(anyString()));
+        CommonResponse<Map<String, Object>> actualResponse = orderService.getOrderDetail(anyString());
+
+        List<CheckoutItemResponse> itemResponses = (List<CheckoutItemResponse>) actualResponse
+            .getData().get("content");
+        assertEquals(itemResponses.size(), 0);
     }
 }

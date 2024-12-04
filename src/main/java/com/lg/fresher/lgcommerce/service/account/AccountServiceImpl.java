@@ -105,42 +105,6 @@ public class AccountServiceImpl implements AccountService {
      * @return
      */
     @Override
-    public CommonResponse<Map<String, Object>> getMyOrders(SearchOrderRequest searchOrderRequest) {
-        Account account = getAccountFromContext();
-
-        String sortRequest = searchOrderRequest.getSortRequest();
-        String status = searchOrderRequest.getStatus();
-        int pageNo = searchOrderRequest.getPageNo();
-        int pageSize = searchOrderRequest.getPageSize();
-
-        Specification<Order> orderSpecification = Specification
-                .where(OrderSpecification.filterByOrderStatus(status))
-                .and(OrderSpecification.searchByAccountId(account.getAccountId()));
-
-        List<Sort.Order> orders = SearchUtil.appendOrderSort(sortRequest, SearchConstant.VALID_ORDER_SORT_FIELD);
-
-        Sort sort = Sort.by(orders);
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-
-        MetaData metaData = new MetaData();
-        Page<Order> orderResponse = Page.empty();
-
-        orderResponse = orderRepository.findAll(orderSpecification, pageable);
-
-        metaData.setOffSet(pageNo);
-        metaData.setTotalElements(orderResponse.getTotalElements());
-        metaData.setLimit(pageSize);
-
-        Map<String, Object> res = new HashMap<>();
-        res.put("content", orderResponse.getContent().stream().map(orderMapper::toGetListOrderResponse));
-        res.put("metaData", metaData);
-        return CommonResponse.success(res);
-    }
-
-    /**
-     * @return
-     */
-    @Override
     public Account getAccountFromContext() {
         try {
             UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder

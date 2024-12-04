@@ -237,7 +237,7 @@ public class ReviewServiceImplTest {
         InvalidRequestException exception = assertThrows(InvalidRequestException.class, () -> {
             reviewServiceImpl.createReviewByOrderDetailId(orderDetail.getOrderDetailId(), reviewRequest);
         });
-        assertEquals("Không thể tải lên quá 3 ảnh!", exception.getMessage());
+        assertEquals("Không thể tải lên quá 3 ảnh", exception.getMessage());
     }
     @Test
     void createReviewByOrderDetailId_shouldAllowThreeImages() {

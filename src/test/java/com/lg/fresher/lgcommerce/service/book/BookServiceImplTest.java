@@ -97,57 +97,56 @@ public class BookServiceImplTest {
     @Test
     void testGetAllBookListByClient_WithResults() {
         // Arrange
-        String title = "Test Title";
-        String publisher = "Test Publisher";
-        Integer rating = 4;
-        Double minPrice = 100.0;
-        Double maxPrice = 500.0;
-        List<String> authors = List.of("Author1", "Author2");
-        List<String> categories = List.of("Category1", "Category2");
-        List<String> sort = List.of("title_asc", "sellingPrice_desc");
+        String title = "Harry Potter";
+        String publisher = "Bloomsbury";
+        Integer rating = 5;
+        Double minPrice = 10.0;
+        Double maxPrice = 50.0;
+        List<String> authors = null;
+        List<String> categories = null;
+        List<String> sort = List.of("title_asc");
         Boolean status = true;
         Integer page = 0;
         Integer size = 10;
 
-        BookCard mockBook1 = mock(BookCard.class);
-        when(mockBook1.getBookId()).thenReturn("1");
-        when(mockBook1.getTitle()).thenReturn("Test Book 1");
-        when(mockBook1.getThumbnail()).thenReturn("thumbnail1.png");
-        when(mockBook1.getAuthorName()).thenReturn("Author1");
-        when(mockBook1.getCategoryName()).thenReturn("Category1");
-        when(mockBook1.getPublisherName()).thenReturn("Test Publisher");
-        when(mockBook1.getAverageRating()).thenReturn(4.5);
-        when(mockBook1.getBasePrice()).thenReturn(150.0);
-        when(mockBook1.getDiscountPrice()).thenReturn(100.0);
-        when(mockBook1.getTotalSalesCount()).thenReturn(200);
+        // Mock pageable and sorting
+        Sort orders = Sort.by(Sort.Order.asc("title"));
+        Pageable pageable = PageRequest.of(page, size, orders);
 
-        BookCard mockBook2 = mock(BookCard.class);
-        when(mockBook2.getBookId()).thenReturn("2");
-        when(mockBook2.getTitle()).thenReturn("Test Book 2");
-        when(mockBook2.getThumbnail()).thenReturn("thumbnail2.png");
-        when(mockBook2.getAuthorName()).thenReturn("Author2");
-        when(mockBook2.getCategoryName()).thenReturn("Category2");
-        when(mockBook2.getPublisherName()).thenReturn("Test Publisher");
-        when(mockBook2.getAverageRating()).thenReturn(4.0);
-        when(mockBook2.getBasePrice()).thenReturn(200.0);
-        when(mockBook2.getDiscountPrice()).thenReturn(150.0);
-        when(mockBook2.getTotalSalesCount()).thenReturn(300);
+        BookCard mockBook1 = new BookCard();
+        mockBook1.setBookId("1");
+        mockBook1.setTitle("Test Book 1");
+        mockBook1.setThumbnail("thumbnail1.png");
+        mockBook1.setAuthorName("Author1");
+        mockBook1.setCategoryName("Category1");
+        mockBook1.setPublisherName("Test Publisher");
+        mockBook1.setAverageRating(4.5);
+        mockBook1.setBasePrice(150.0);
+        mockBook1.setDiscountPrice(100.0);
+        mockBook1.setTotalSalesCount(200);
 
-        List<BookCard> mockBooks = List.of(mockBook1, mockBook2);
+        BookCard mockBook2 = new BookCard();
+        mockBook2.setBookId("2");
+        mockBook2.setTitle("Test Book 2");
+        mockBook2.setThumbnail("thumbnail2.png");
+        mockBook2.setAuthorName("Author2");
+        mockBook2.setCategoryName("Category2");
+        mockBook2.setPublisherName("Test Publisher");
+        mockBook2.setAverageRating(4.0);
+        mockBook2.setBasePrice(200.0);
+        mockBook2.setDiscountPrice(150.0);
+        mockBook2.setTotalSalesCount(300);
+
+        Map<String, Object> repositoryResponse = Map.of(
+                "data", List.of(mockBook1, mockBook2),
+                "total", 2L
+        );
 
 
         // Mock repository
-        when(bookCustomRepository.getBookCard(
-                eq(title),
-                eq(publisher),
-                eq(rating),
-                eq(minPrice),
-                eq(maxPrice),
-                eq(authors),
-                eq(categories),
-                eq(status),
-                any(Pageable.class) // Dùng Matcher cho Pageable
-        )).thenReturn(mockPage);
+        Mockito.when(bookCustomRepository.getBookCard(
+                title, publisher, rating, minPrice, maxPrice, authors, categories, status, pageable
+        )).thenReturn(repositoryResponse);
 
         // Act
         CommonResponse<Map<String, Object>> response = bookService.getAllBookListByClient(
@@ -156,60 +155,48 @@ public class BookServiceImplTest {
 
         // Assert
         assertNotNull(response);
-        assertNotNull(response.getData());
+        Map<String, Object> responseBody = response.getData();
+        assertNotNull(responseBody.get("content"));
+        assertNotNull(responseBody.get("metaData"));
 
-        List<?> content = (List<?>) response.getData().get("content");
-        assertEquals(2, content.size());
+        List<BookResponse> content = (List<BookResponse>) responseBody.get("content");
+        assertEquals(2, content.size()); // Có 2 cuốn sách được trả về
 
-        // Validate first book details
-        BookCardResponse firstBook = (BookCardResponse) content.get(0);
-        assertEquals("1", firstBook.getBookId());
-        assertEquals("Test Book 1", firstBook.getTitle());
-
-
-        // Verify repository interaction
-        verify(bookRepository, times(1)).getBookCards(
-                eq(title),
-                eq(publisher),
-                eq(rating),
-                eq(minPrice),
-                eq(maxPrice),
-                eq(authors),
-                eq(categories),
-                eq(status),
-                any(Pageable.class)
-        );
+        Map<?, ?> metaData = (Map<?, ?>) responseBody.get("metaData");
+        assertEquals(2L, metaData.get("totalElements"));
+        assertEquals(size, metaData.get("limit"));
+        assertEquals(page, metaData.get("offset"));
     }
 
     //test get list book by client when have no result
     @Test
     void testGetAllBookListByClient_NoResults() {
         // Arrange
-        String title = "Nonexistent Title";
-        String publisher = "Nonexistent Publisher";
-        Integer rating = null;
-        Double minPrice = null;
-        Double maxPrice = null;
-        List<String> authors = Collections.emptyList();
-        List<String> categories = Collections.emptyList();
-        List<String> sort = Collections.emptyList();
+        String title = "Harry Potter";
+        String publisher = "Bloomsbury";
+        Integer rating = 5;
+        Double minPrice = 10.0;
+        Double maxPrice = 50.0;
+        List<String> authors = null;
+        List<String> categories = null;
+        List<String> sort = List.of("title_asc");
         Boolean status = true;
         Integer page = 0;
         Integer size = 10;
 
-        // Mock an empty page
-        Page<ClientBookCard> emptyPage = new PageImpl<>(Collections.emptyList(), PageRequest.of(page, size), 0);
-        when(bookRepository.getBookCards(
-                eq(title),
-                eq(publisher),
-                eq(rating),
-                eq(minPrice),
-                eq(maxPrice),
-                eq(authors),
-                eq(categories),
-                eq(status),
-                any(Pageable.class)
-        )).thenReturn(emptyPage);
+        // Mock pageable and sorting
+        Sort orders = Sort.by(Sort.Order.asc("title"));
+        Pageable pageable = PageRequest.of(page, size, orders);
+
+        // Mock dữ liệu trả về từ repository cho trường hợp no result
+        Map<String, Object> repositoryResponse = Map.of(
+                "data", Collections.emptyList(), // Danh sách rỗng
+                "total", 0L                     // Tổng số bản ghi là 0
+        );
+
+        Mockito.when(bookCustomRepository.getBookCard(
+                title, publisher, rating, minPrice, maxPrice, authors, categories, status, pageable
+        )).thenReturn(repositoryResponse);
 
         // Act
         CommonResponse<Map<String, Object>> response = bookService.getAllBookListByClient(
@@ -218,23 +205,22 @@ public class BookServiceImplTest {
 
         // Assert
         assertNotNull(response);
-        assertNotNull(response.getData());
-        List<?> content = (List<?>) response.getData().get("content");
+
+        Map<String, Object> responseBody = response.getData();
+        assertNotNull(responseBody);
+
+        // Kiểm tra danh sách content
+        List<?> content = (List<?>) responseBody.get("content");
         assertNotNull(content);
-        assertTrue(content.isEmpty());
+        assertTrue(content.isEmpty()); // Danh sách phải rỗng
 
-        Map<String, Object> metaData = (Map<String, Object>) response.getData().get("metaData");
-        assertEquals(0L, metaData.get("totalElements"));
-        assertEquals(page, metaData.get("limit"));
-        assertEquals(size, metaData.get("offset"));
-
-        // Verify repository call
-        verify(bookRepository, times(1)).getBookCards(
-                title, publisher, rating, minPrice, maxPrice, authors, categories, status, PageRequest.of(page, size, Sort.by("created_at").descending())
-        );
+        // Kiểm tra metadata
+        Map<?, ?> metaData = (Map<?, ?>) responseBody.get("metaData");
+        assertNotNull(metaData);
+        assertEquals(0L, metaData.get("totalElements")); // Tổng số bản ghi phải là 0
+        assertEquals(size, metaData.get("limit"));
+        assertEquals(page, metaData.get("offset"));
     }
-
-
 
 
     @Test

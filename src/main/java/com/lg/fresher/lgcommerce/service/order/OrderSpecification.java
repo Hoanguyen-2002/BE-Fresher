@@ -21,7 +21,7 @@ import org.springframework.data.jpa.domain.Specification;
  * 11/21/2024       63200502      first creation */
 public class OrderSpecification {
     private static final String CANCEL_STATUS = OrderStatus.CANCEL.toString();
-    private static final String DENIED_STATUS = OrderStatus.CANCEL.toString();
+    private static final String DENIED_STATUS = OrderStatus.DENIED.toString();
     private static final String ORDER_STATUS = "orderStatus";
     public static Specification<Order> searchByKeyword(String searchKeyword, String searchBy) {
         return (root, query, criteriaBuilder) -> {

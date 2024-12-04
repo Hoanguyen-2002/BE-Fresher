@@ -8,9 +8,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 public class BookCustomRepository {
 
     private final EntityManager entityManager;
+
 
     /**
      *
@@ -62,90 +65,94 @@ public class BookCustomRepository {
                                            List<String> categories,
                                            Boolean status,
                                            Pageable pageable) {
-        StringBuilder queryString = new StringBuilder("""
-                WITH BOOK_MASTER AS (
-                    SELECT b.book_id, b.title, b.thumbnail, COALESCE(AVG(r.rating), 0) AS averageRating,
-                          pr.base_price, pr.discount_price, p.name AS publisherName, b.created_at, (pr.base_price - pr.discount_price) AS sellingPrice
-                    FROM book b
-                            LEFT JOIN price pr ON pr.book_id = b.book_id
-                            LEFT JOIN publisher p ON b.publisher_id = p.publisher_id
-                            LEFT JOIN review r ON r.book_id = b.book_id
-                    WHERE (:title IS NULL OR LOWER(b.title COLLATE utf8mb4_bin) LIKE LOWER(CONCAT('%', :title, '%') COLLATE utf8mb4_bin))
-                    AND (:publisher IS NULL OR p.publisher_id = :publisher)
-                    AND (:minPrice IS NULL OR pr.base_price >= :minPrice)
-                    AND (:maxPrice IS NULL OR pr.base_price <= :maxPrice)
-                    AND b.status = :status
-                    GROUP BY b.book_id, b.title, b.thumbnail,
-                            pr.base_price, pr.discount_price, p.name, b.created_at
-                    HAVING (:rating IS NULL OR FLOOR(COALESCE(AVG(r.rating), 0)) = :rating)
-                ), SALES_COUNT_MASTER AS (
-                    SELECT od.book_id, SUM(quantity) AS totalSalesCount
-                    FROM order_detail od
-                    GROUP BY od.book_id
-                ), BOOK_CATEGORY_MASTER AS (
-                    SELECT bc.book_id,
-                        GROUP_CONCAT(ca.name ORDER BY ca.name SEPARATOR ', ') as categoryName
-                    FROM book_category bc
-                    INNER JOIN category ca ON ca.category_id = bc.category_id
-                    WHERE (:categories IS NULL OR bc.category_id IN (?1))
-                    GROUP BY bc.book_id
-                ), BOOK_AUTHOR_MASTER AS (
-                    SELECT ba.book_id,
-                           GROUP_CONCAT(a.name ORDER BY a.name SEPARATOR ', ') as authorName
-                    FROM book_author ba
-                    INNER JOIN author a ON a.author_id = ba.author_id
-                    WHERE (:authors IS NULL OR ba.author_id IN (?2))
-                    GROUP BY ba.book_id
-                )
-                SELECT
-                    bm.book_id AS bookId,
-                    bm.title AS title,
-                    bm.base_price AS basePrice,
-                    bm.thumbnail AS thumbnail,
-                    bm.discount_price AS discountPrice,
-                    bm.publisherName AS publisherName,
-                    bm.sellingPrice AS sellingPrice,
-                    bm.averageRating AS averageRating,
-                    IFNULL(scm.totalSalesCount, 0) AS totalSalesCount,
-                    bam.authorName AS authorName,
-                    bcm.categoryName AS categoryName
-                FROM BOOK_MASTER bm
-                LEFT JOIN SALES_COUNT_MASTER scm ON scm.book_id = bm.book_id
-                INNER JOIN BOOK_AUTHOR_MASTER bam ON bam.book_id = bm.book_id
-                INNER JOIN BOOK_CATEGORY_MASTER bcm ON bcm.book_id = bm.book_id
-                """);
-        String countString = """
-                WITH BOOK_MASTER AS (
-                    SELECT b.book_id, b.title, b.thumbnail, COALESCE(AVG(r.rating), 0) AS averageRating,
-                          pr.base_price, pr.discount_price, p.name AS publisherName, b.created_at
-                    FROM book b
-                            LEFT JOIN price pr ON pr.book_id = b.book_id
-                            LEFT JOIN publisher p ON b.publisher_id = p.publisher_id
-                            LEFT JOIN review r ON r.book_id = b.book_id
-                    WHERE (:title IS NULL OR LOWER(b.title COLLATE utf8mb4_bin) LIKE LOWER(CONCAT('%', :title, '%') COLLATE utf8mb4_bin))
-                    AND (:publisher IS NULL OR p.publisher_id = :publisher)
-                    AND (:minPrice IS NULL OR pr.base_price >= :minPrice)
-                    AND (:maxPrice IS NULL OR pr.base_price <= :maxPrice)
-                    AND b.status = :status
-                    GROUP BY b.book_id, b.title, b.thumbnail,
-                            pr.base_price, pr.discount_price, p.name, b.created_at
-                    HAVING (:rating IS NULL OR FLOOR(COALESCE(AVG(r.rating), 0)) = :rating)
-                ), BOOK_CATEGORY_MASTER AS (
-                    SELECT DISTINCT bc.book_id
-                    FROM book_category bc
-                    WHERE (:categories IS NULL OR bc.category_id IN (?1))
-                ), BOOK_AUTHOR_MASTER AS (
-                    SELECT DISTINCT ba.book_id
-                    FROM book_author ba
-                    WHERE (:authors IS NULL OR ba.author_id IN (?2))
-                )
-                SELECT COUNT(*)
-                FROM BOOK_MASTER bm
-                INNER JOIN BOOK_AUTHOR_MASTER bam ON bam.book_id = bm.book_id
-                INNER JOIN BOOK_CATEGORY_MASTER bcm ON bcm.book_id = bm.book_id
-                """;
+        // Kiểm tra title có chứa ký tự tiếng Việt có dấu hay không
+        boolean isTitleVietnamese = containsDiacritics(title);
 
-        //handle sorting
+        StringBuilder queryString = new StringBuilder("WITH BOOK_MASTER AS (\n" +
+                "                                    SELECT b.book_id, b.title, b.thumbnail, COALESCE(AVG(r.rating), 0) AS averageRating,\n" +
+                "                                          pr.base_price, pr.discount_price, p.name AS publisherName, b.created_at, (pr.base_price - pr.discount_price) AS sellingPrice\n" +
+                "                                    FROM book b\n" +
+                "                                            LEFT JOIN price pr ON pr.book_id = b.book_id\n" +
+                "                                            LEFT JOIN publisher p ON b.publisher_id = p.publisher_id\n" +
+                "                                            LEFT JOIN review r ON r.book_id = b.book_id\n" +
+                (isTitleVietnamese ?
+                        "                                    WHERE (:title IS NULL OR BINARY LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%')) )\n" :
+                        "                                    WHERE (:title IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%')) )\n")+
+                "                                    AND (:publisher IS NULL OR p.publisher_id = :publisher)\n" +
+                "                                    AND (:minPrice IS NULL OR pr.base_price >= :minPrice)\n" +
+                "                                    AND (:maxPrice IS NULL OR pr.base_price <= :maxPrice)\n" +
+                "                                    AND b.status = :status\n" +
+                "                                    GROUP BY b.book_id, b.title, b.thumbnail,\n" +
+                "                                            pr.base_price, pr.discount_price, p.name, b.created_at\n" +
+                "                                    HAVING (:rating IS NULL OR FLOOR(COALESCE(AVG(r.rating), 0)) = :rating)\n" +
+                "                                ), SALES_COUNT_MASTER AS (\n" +
+                "                                    SELECT od.book_id, SUM(quantity) AS totalSalesCount\n" +
+                "                                    FROM order_detail od\n" +
+                "                                    GROUP BY od.book_id\n" +
+                "                                ), BOOK_CATEGORY_MASTER AS (\n" +
+                "                                    SELECT bc.book_id,\n" +
+                "                                        GROUP_CONCAT(ca.name ORDER BY ca.name SEPARATOR ', ') as categoryName\n" +
+                "                                    FROM book_category bc\n" +
+                "                                    INNER JOIN category ca ON ca.category_id = bc.category_id\n" +
+                "                                    WHERE (:categories IS NULL OR bc.category_id IN (?1))\n" +
+                "                                    GROUP BY bc.book_id\n" +
+                "                                ), BOOK_AUTHOR_MASTER AS (\n" +
+                "                                    SELECT ba.book_id,\n" +
+                "                                           GROUP_CONCAT(a.name ORDER BY a.name SEPARATOR ', ') as authorName\n" +
+                "                                    FROM book_author ba\n" +
+                "                                    INNER JOIN author a ON a.author_id = ba.author_id\n" +
+                "                                    WHERE (:authors IS NULL OR ba.author_id IN (?2))\n" +
+                "                                    GROUP BY ba.book_id\n" +
+                "                                )\n" +
+                "                                SELECT\n" +
+                "                                    bm.book_id AS bookId,\n" +
+                "                                    bm.title AS title,\n" +
+                "                                    bm.base_price AS basePrice,\n" +
+                "                                    bm.thumbnail AS thumbnail,\n" +
+                "                                    bm.discount_price AS discountPrice,\n" +
+                "                                    bm.publisherName AS publisherName,\n" +
+                "                                    bm.sellingPrice AS sellingPrice,\n" +
+                "                                    bm.averageRating AS averageRating,\n" +
+                "                                    IFNULL(scm.totalSalesCount, 0) AS totalSalesCount,\n" +
+                "                                    bam.authorName AS authorName,\n" +
+                "                                    bcm.categoryName AS categoryName\n" +
+                "                                FROM BOOK_MASTER bm\n" +
+                "                                LEFT JOIN SALES_COUNT_MASTER scm ON scm.book_id = bm.book_id\n" +
+                "                                INNER JOIN BOOK_AUTHOR_MASTER bam ON bam.book_id = bm.book_id\n" +
+                "                                INNER JOIN BOOK_CATEGORY_MASTER bcm ON bcm.book_id = bm.book_id");
+
+        String countString = "WITH BOOK_MASTER AS (\n" +
+                "                SELECT b.book_id, b.title, b.thumbnail, COALESCE(AVG(r.rating), 0) AS averageRating,\n" +
+                "                      pr.base_price, pr.discount_price, p.name AS publisherName, b.created_at\n" +
+                "                FROM book b\n" +
+                "                        LEFT JOIN price pr ON pr.book_id = b.book_id\n" +
+                "                        LEFT JOIN publisher p ON b.publisher_id = p.publisher_id\n" +
+                "                        LEFT JOIN review r ON r.book_id = b.book_id\n" +
+                (isTitleVietnamese ?
+                        "                                    WHERE (:title IS NULL OR BINARY LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%')) )\n" :
+                        "                                    WHERE (:title IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%')) )\n")+
+                "                AND (:publisher IS NULL OR p.publisher_id = :publisher)\n" +
+                "                AND (:minPrice IS NULL OR pr.base_price >= :minPrice)\n" +
+                "                AND (:maxPrice IS NULL OR pr.base_price <= :maxPrice)\n" +
+                "                AND b.status = :status\n" +
+                "                GROUP BY b.book_id, b.title, b.thumbnail,\n" +
+                "                        pr.base_price, pr.discount_price, p.name, b.created_at\n" +
+                "                HAVING (:rating IS NULL OR FLOOR(COALESCE(AVG(r.rating), 0)) = :rating)\n" +
+                "            ), BOOK_CATEGORY_MASTER AS (\n" +
+                "                SELECT DISTINCT bc.book_id\n" +
+                "                FROM book_category bc\n" +
+                "                WHERE (:categories IS NULL OR bc.category_id IN (?1))\n" +
+                "            ), BOOK_AUTHOR_MASTER AS (\n" +
+                "                SELECT DISTINCT ba.book_id\n" +
+                "                FROM book_author ba\n" +
+                "                WHERE (:authors IS NULL OR ba.author_id IN (?2))\n" +
+                "            )\n" +
+                "            SELECT COUNT(*)\n" +
+                "            FROM BOOK_MASTER bm\n" +
+                "            INNER JOIN BOOK_AUTHOR_MASTER bam ON bam.book_id = bm.book_id\n" +
+                "            INNER JOIN BOOK_CATEGORY_MASTER bcm ON bcm.book_id = bm.book_id";
+
+        // Handle sorting
         queryString.append(" ORDER BY ");
         String orderByClause = pageable.getSort().stream()
                 .map(order -> order.getProperty() + " " + order.getDirection().name())
@@ -164,6 +171,23 @@ public class BookCustomRepository {
                 "data", this.convert(data, BookCard.class),
                 "total", total
         );
+    }
+
+    /**
+     *
+     * @param input
+     * @return
+     */
+    private boolean containsDiacritics(String input) {
+        if (input == null || input.isEmpty()) {
+            return false;
+        }
+
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+
+        Pattern diacriticsPattern = Pattern.compile("\\p{M}");
+
+        return diacriticsPattern.matcher(normalized).find();
     }
 
     /**

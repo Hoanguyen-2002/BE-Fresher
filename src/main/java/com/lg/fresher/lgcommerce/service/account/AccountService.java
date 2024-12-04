@@ -15,8 +15,6 @@ public interface AccountService {
 
     CommonResponse<Map<String, Object>> getMyInfo();
 
-    CommonResponse<Map<String, Object>> getMyOrders(SearchOrderRequest searchOrderRequest);
-
     Account getAccountFromContext();
 
 }

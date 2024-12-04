@@ -1,18 +1,32 @@
 package com.lg.fresher.lgcommerce.service.account.order;
 
 import com.lg.fresher.lgcommerce.constant.OrderStatus;
+import com.lg.fresher.lgcommerce.constant.SearchConstant;
 import com.lg.fresher.lgcommerce.constant.Status;
 import com.lg.fresher.lgcommerce.entity.account.Account;
 import com.lg.fresher.lgcommerce.entity.order.Order;
 import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
+import com.lg.fresher.lgcommerce.mapping.order.OrderMapper;
 import com.lg.fresher.lgcommerce.model.request.account.CancelOrderRequest;
+import com.lg.fresher.lgcommerce.model.request.order.SearchOrderRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
 import com.lg.fresher.lgcommerce.model.response.StringResponse;
+import com.lg.fresher.lgcommerce.model.response.common.MetaData;
 import com.lg.fresher.lgcommerce.repository.order.OrderRepository;
 import com.lg.fresher.lgcommerce.service.account.AccountService;
+import com.lg.fresher.lgcommerce.service.order.OrderSpecification;
 import com.lg.fresher.lgcommerce.utils.OrderUtil;
+import com.lg.fresher.lgcommerce.utils.SearchUtil;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +52,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AccountOrderServiceImpl implements AccountOrderService {
     private final AccountService accountService;
     private final OrderRepository orderRepository;
+    private final OrderMapper orderMapper;
 
     /**
      * @param orderId
@@ -61,6 +76,41 @@ public class AccountOrderServiceImpl implements AccountOrderService {
         }
         order.setNote(message);
         return CommonResponse.success(Status.CANCEL_ORDER_SUCCESS.label());
+    }
+
+    @Override
+    public CommonResponse<Map<String, Object>> getMyOrders(SearchOrderRequest searchOrderRequest) {
+        Account account = accountService.getAccountFromContext();
+
+        String sortRequest = searchOrderRequest.getSortRequest();
+        String status = searchOrderRequest.getStatus();
+        int pageNo = searchOrderRequest.getPageNo();
+        int pageSize = searchOrderRequest.getPageSize();
+
+        Specification<Order> orderSpecification = Specification
+            .where(OrderSpecification.filterByOrderStatus(status))
+            .and(OrderSpecification.searchByAccountId(account.getAccountId()));
+
+        List<Sort.Order> orders = SearchUtil.appendOrderSort(sortRequest,
+            SearchConstant.VALID_ORDER_SORT_FIELD);
+
+        Sort sort = Sort.by(orders);
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        MetaData metaData = new MetaData();
+        Page<Order> orderResponse = Page.empty();
+
+        orderResponse = orderRepository.findAll(orderSpecification, pageable);
+
+        metaData.setOffSet(pageNo);
+        metaData.setTotalElements(orderResponse.getTotalElements());
+        metaData.setLimit(pageSize);
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("content",
+            orderResponse.getContent().stream().map(orderMapper::toGetListOrderResponse));
+        res.put("metaData", metaData);
+        return CommonResponse.success(res);
     }
 
     /**
