@@ -57,6 +57,14 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         current_session_context_class: thread
     show-sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration # Đường dẫn chứa file migration
+    baseline-on-migrate: true        # Đặt baseline nếu DB chưa được versioned
+    validate-on-migrate: true        # Kiểm tra tính hợp lệ trước khi chạy migration
+    clean-on-validation-error: false # Không tự động xóa dữ liệu khi có lỗi validation
+
 server:
   shutdown: graceful
   compression:
