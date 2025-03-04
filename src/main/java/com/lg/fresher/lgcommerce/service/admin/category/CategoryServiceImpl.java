@@ -44,6 +44,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private static final Logger logger = LoggerFactory.getLogger(CategoryServiceImpl.class);
+    private static final String CONTENT_KEY = "content";
 
     /**
      *
@@ -116,7 +117,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("Không tìm thấy danh mục!"));
 
-        Map<String, CategoryModel> content = Map.of("content", categoryMapper.toModel(category));
+        Map<String, CategoryModel> content = Map.of(CONTENT_KEY, categoryMapper.toModel(category));
 
         return new CommonResponse<>(content);
     }
@@ -136,7 +137,7 @@ public class CategoryServiceImpl implements CategoryService {
         category.setName(categoryRequestDTO.getName());
 
         Category newCategory = categoryRepository.save(category);
-        Map<String, CategoryModel> content = Map.of("content", categoryMapper.toModel(newCategory));
+        Map<String, CategoryModel> content = Map.of(CONTENT_KEY, categoryMapper.toModel(newCategory));
         return new CommonResponse<>(content);
     }
 
@@ -162,7 +163,7 @@ public class CategoryServiceImpl implements CategoryService {
         category.setUpdatedAt(LocalDateTime.now());
 
         Category updateCategory = categoryRepository.save(category);
-        Map<String, CategoryModel> content = Map.of("content", categoryMapper.toModel(updateCategory));
+        Map<String, CategoryModel> content = Map.of(CONTENT_KEY, categoryMapper.toModel(updateCategory));
         return new CommonResponse<>(content);
     }
 
@@ -211,6 +212,6 @@ public class CategoryServiceImpl implements CategoryService {
                         .name(category.getName())
                         .build())
                 .toList();
-        return CommonResponse.success(Map.of("content", res));
+        return CommonResponse.success(Map.of(CONTENT_KEY, res));
     }
 }

@@ -9,7 +9,6 @@ import com.lg.fresher.lgcommerce.exception.auth.RefreshTokenException;
 import com.lg.fresher.lgcommerce.exception.book.BookOutOfStockException;
 import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
 import com.lg.fresher.lgcommerce.exception.InvalidRequestException;
-import com.lg.fresher.lgcommerce.exception.data.DataNotFoundException;
 import com.lg.fresher.lgcommerce.exception.data.DeactiveDataException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;

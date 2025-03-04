@@ -1,6 +1,5 @@
 package com.lg.fresher.lgcommerce.annotation.account;
 
-import com.lg.fresher.lgcommerce.annotation.auth.PasswordValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 

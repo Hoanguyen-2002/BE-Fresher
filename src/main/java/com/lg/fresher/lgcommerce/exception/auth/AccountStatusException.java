@@ -1,7 +1,9 @@
 package com.lg.fresher.lgcommerce.exception.auth;
 
 import com.lg.fresher.lgcommerce.constant.Status;
+import lombok.Getter;
 
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,12 +23,25 @@ import java.util.Map;
  * ---------------  ---------   ------------------------------------------
  * 11/18/2024       63200502      first creation */
 public class AccountStatusException extends RuntimeException{
+    @Serial
     private static final long serialVersionUID = 6942898826898130771L;
 
     private Integer code;
 
 
-    private Status status;
+    /**
+     * -- GETTER --
+     *  @ Description : lg_ecommerce_be AccountStatusException Member Field getStatus
+     * <pre>
+     *  Date of Revision Modifier Revision
+     *  ---------------  ---------   -----------------------------------------------
+     *  11/18/2024           63200502    first creation
+     * <pre>
+     *
+     * @return  Status
+     */
+    @Getter
+    private final Status status;
 
     /**
      *
@@ -89,20 +104,6 @@ public class AccountStatusException extends RuntimeException{
         map.put("code", getCode());
         map.put("msg", getMessage());
         return map;
-    }
-
-    /**
-     *
-     * @ Description : lg_ecommerce_be AccountStatusException Member Field getStatus
-     *<pre>
-     * Date of Revision Modifier Revision
-     * ---------------  ---------   -----------------------------------------------
-     * 11/18/2024           63200502    first creation
-     *<pre>
-     * @return  Status
-     */
-    public Status getStatus() {
-        return this.status;
     }
 
     /**

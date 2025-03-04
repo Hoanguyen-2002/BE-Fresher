@@ -26,7 +26,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -99,7 +98,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         List<ReviewResponse> reviewResponses = reviews.stream()
                 .map(reviewMapper::toReviewResponse)
-                .collect(Collectors.toList());
+                .toList();
 
         MetaData metadata = new MetaData(
                 totalElements,
@@ -155,7 +154,7 @@ public class ReviewServiceImpl implements ReviewService {
                         reviewImage.setCreatedAt(LocalDateTime.now());
                         return reviewImage;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
 
             reviewImageRepository.saveAll(reviewImages);
             savedReview.setReviewImages(reviewImages);

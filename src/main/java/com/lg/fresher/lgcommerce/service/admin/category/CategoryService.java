@@ -1,6 +1,6 @@
 package com.lg.fresher.lgcommerce.service.admin.category;
 
-import com.lg.fresher.lgcommerce.model.request.category.CategoryRequest;
+
 import com.lg.fresher.lgcommerce.model.request.category.CategoryRequestDTO;
 import com.lg.fresher.lgcommerce.model.response.admin.category.CategoryModel;
 import com.lg.fresher.lgcommerce.model.response.admin.category.CategoryResponse;

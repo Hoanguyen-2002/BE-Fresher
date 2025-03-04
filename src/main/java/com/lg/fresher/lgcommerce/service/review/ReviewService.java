@@ -2,7 +2,6 @@ package com.lg.fresher.lgcommerce.service.review;
 
 import com.lg.fresher.lgcommerce.model.request.review.ReviewRequest;
 import com.lg.fresher.lgcommerce.model.response.CommonResponse;
-import com.lg.fresher.lgcommerce.model.response.review.ReviewResponse;
 
 import java.util.Map;
 

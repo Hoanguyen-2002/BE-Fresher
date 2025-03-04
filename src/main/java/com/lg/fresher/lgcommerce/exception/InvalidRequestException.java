@@ -1,6 +1,7 @@
 package com.lg.fresher.lgcommerce.exception;
 
 import com.lg.fresher.lgcommerce.constant.Status;
+import lombok.Getter;
 
 import java.io.Serial;
 import java.util.HashMap;
@@ -28,7 +29,19 @@ public class InvalidRequestException extends RuntimeException {
     private Integer code;
 
 
-    private Status status;
+    /**
+     * -- GETTER --
+     *  @ Description : lg_ecommerce_be InvalidRequestException Member Field getStatus
+     * <pre>
+     *  Date of Revision Modifier Revision
+     *  ---------------  ---------   -----------------------------------------------
+     *  11/6/2024           63200502    first creation
+     * <pre>
+     *
+     * @return  Status
+     */
+    @Getter
+    private final Status status;
 
     /**
      *
@@ -137,20 +150,6 @@ public class InvalidRequestException extends RuntimeException {
         map.put("code", getCode());
         map.put("msg", getMessage());
         return map;
-    }
-
-    /**
-     *
-     * @ Description : lg_ecommerce_be InvalidRequestException Member Field getStatus
-     *<pre>
-     * Date of Revision Modifier Revision
-     * ---------------  ---------   -----------------------------------------------
-     * 11/6/2024           63200502    first creation
-     *<pre>
-     * @return  Status
-     */
-    public Status getStatus() {
-        return this.status;
     }
 
     /**

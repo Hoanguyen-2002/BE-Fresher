@@ -4,7 +4,6 @@ import com.lg.fresher.lgcommerce.model.response.order.OrderDetailItem;
 import com.lg.fresher.lgcommerce.repository.order.OrderDetailRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -33,9 +32,13 @@ import java.util.List;
  */
 @Service
 public class EmailServiceImpl implements EmailService {
-    @Autowired
-    public JavaMailSender emailSender;
-    public OrderDetailRepository orderDetailRepository;
+    private final JavaMailSender emailSender;
+    private final OrderDetailRepository orderDetailRepository;
+
+    public EmailServiceImpl(JavaMailSender emailSender, OrderDetailRepository orderDetailRepository) {
+        this.emailSender = emailSender;
+        this.orderDetailRepository = orderDetailRepository;
+    }
 
     /**
      * @param to
